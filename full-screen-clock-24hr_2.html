@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html style="height:100%; margin:0; padding:0">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<title>Clock</title>
+		<style type="text/css">
+			/* Customizable font and colors */
+			html {
+				font-family: 'Bebas Neue', sans-serif;
+				font-size: 60px; /* Adjust size as needed */
+    				font-weight: 900; /* Heaviest weight */
+				background: #000000;
+				color: #FFFFFF;
+				transform: rotate(90deg);
+
+			}
+		</style>
+	</head>
+	
+	<body style="display:flex; height:100%; margin:0; padding:0; justify-content:center; align-items:center">
+		<span id="clocktext" style="font-kerning:none"></span>
+		
+		<script>
+			"use strict";
+			
+			let textElem = document.getElementById("clocktext");
+			const targetWidth = 0.5;  // Proportion of full screen width
+			let curFontSize = 10;  // Do not change
+			
+			function updateClock() {
+				const d = new Date();
+				let s = "";
+				s += (10 > d.getHours  () ? "0" : "") + d.getHours  () + ":";
+				s += (10 > d.getMinutes() ? "0" : "") + d.getMinutes();
+				textElem.textContent = s;
+				setTimeout(updateClock, 60000 - d.getTime() % 60000 + 100);
+			}
+			
+			function updateTextSize() {
+				for (let i = 0; 3 > i; i++) {  // Iterate for better better convergence
+					curFontSize *= targetWidth / (textElem.offsetWidth / textElem.parentNode.offsetWidth);
+					textElem.style.fontSize = curFontSize + "pt";
+				}
+			}
+			
+			updateClock();
+			updateTextSize();
+		</script>
+	</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Touch Fullscreen</title>
+
+<style>
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  color: white;
+}
+
+#touchArea {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+<script>
+let wakeLock = null;
+
+async function enableWakeLock() {
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    console.log('Screen Wake Lock ON');
+  } catch (err) {
+    console.log(err.name, err.message);
+  }
+}
+
+// user interaction required
+document.addEventListener("click", enableWakeLock, { once: true });
+document.addEventListener("touchstart", enableWakeLock, { once: true });
+</script>
+
+<script>
+function goFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  }
+}
+
+// Run only once
+document.addEventListener("click", goFullscreen, { once: true });
+document.addEventListener("touchstart", goFullscreen, { once: true });
+</script>
+
+</body>
+</html>
