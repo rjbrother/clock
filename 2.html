@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fullscreen Clock</title>
+
+<!-- CLOCK FONTS -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@600&family=League+Spartan:wght@700&family=Teko:wght@600&family=Archivo+Black&family=Barlow+Condensed:wght@700&family=Yantramanav:wght@700&family=Saira+Condensed:wght@700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --clock-size: 300px;
+    --zoom: 1;
+    --clock-font: 'Anton', sans-serif;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+    background: black;
+    color: white;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#wrap {
+    text-align: center;
+}
+
+#clock {
+    font-size: calc(var(--clock-size) * var(--zoom));
+    line-height: 1;
+    white-space: nowrap;
+    font-family: var(--clock-font);
+}
+
+#date {
+    margin-top: 0.15em;
+    font-size: calc(var(--clock-size) * var(--zoom) * 0.18);
+    letter-spacing: 0.12em;
+    opacity: 0.85;
+    font-family: var(--clock-font);
+}
+
+#colon {
+    display: inline-block;
+    width: 0.3em;
+}
+
+/* controls */
+#controls {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 999;
+    transition: opacity 0.3s ease;
+}
+
+#controls.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.control-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+}
+
+/* COLOR BUTTON */
+.color-btn {
+    background: linear-gradient(135deg, red, orange, yellow, green, cyan, blue, purple);
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="wrap">
+  <div id="clock">
+    <span id="hh">00</span><span id="colon">:</span><span id="mm">00</span>
+  </div>
+  <div id="date"></div>
+</div>
+
+<div id="controls">
+  <button class="control-btn" id="zoomIn">+</button>
+  <button class="control-btn" id="zoomOut">-</button>
+  <button class="control-btn" id="fontBtn">F</button>
+  <button class="control-btn" id="formatBtn">H</button>
+  <button class="control-btn color-btn" id="colorBtn">C</button>
+  <button class="control-btn" id="rotateBtn">&#x27F3
+</button>
+  <button class="control-btn" id="fsBtn">&#x26F6</button>
+</div>
+
+<script>
+/* ELEMENTS */
+const hh = document.getElementById("hh");
+const mm = document.getElementById("mm");
+const colon = document.getElementById("colon");
+const dateEl = document.getElementById("date");
+const controls = document.getElementById("controls");
+const zoomIn   = document.getElementById("zoomIn");
+const zoomOut  = document.getElementById("zoomOut");
+const fontBtn  = document.getElementById("fontBtn");
+const formatBtn= document.getElementById("formatBtn");
+const colorBtn = document.getElementById("colorBtn");
+const rotateBtn= document.getElementById("rotateBtn");
+const fsBtn    = document.getElementById("fsBtn");
+
+/* STORAGE */
+const STORE = {
+  zoom: "clock_zoom",
+  font: "clock_font",
+  format: "clock_24h",
+  color: "clock_color",
+  landscape: "clock_landscape"
+};
+
+/* FONTS */
+const fonts = [
+  "'Anton', sans-serif",
+  "'Bebas Neue', sans-serif",
+  "'Oswald', sans-serif",
+  "'League Spartan', sans-serif",
+  "'Teko', sans-serif",
+  "'Archivo Black', sans-serif",
+  "'Barlow Condensed', sans-serif",
+  "'Yantramanav', sans-serif",
+  "'Saira Condensed', sans-serif",
+  "'Exo 2', sans-serif"
+];
+
+/* TOP 10 COLORS */
+const colors = [
+  "#ffffff", // white
+  "#ff3b3b", // red
+  "#ff9800", // orange
+  "#ffeb3b", // yellow
+  "#4caf50", // green
+  "#00e5ff", // cyan
+  "#2196f3", // blue
+  "#3f51b5", // indigo
+  "#9c27b0", // purple
+  "#ff2f92"  // pink
+];
+
+/* LOAD SETTINGS */
+let zoom = parseFloat(localStorage.getItem(STORE.zoom)) || 1;
+let fontIndex = parseInt(localStorage.getItem(STORE.font)) || 0;
+let is24Hour = localStorage.getItem(STORE.format) !== "false";
+let colorIndex = parseInt(localStorage.getItem(STORE.color)) || 0;
+let isLandscape = localStorage.getItem(STORE.landscape) === "true";
+
+document.documentElement.style.setProperty('--zoom', zoom);
+document.documentElement.style.setProperty('--clock-font', fonts[fontIndex]);
+document.body.style.color = colors[colorIndex];
+
+const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+let showColon = true;
+let hideTimer;
+
+/* CLOCK */
+function updateClock() {
+    const d = new Date();
+    let h = d.getHours();
+    if (!is24Hour) h = h % 12 || 12;
+
+    hh.textContent = String(h).padStart(2,'0');
+    mm.textContent = String(d.getMinutes()).padStart(2,'0');
+
+    colon.style.visibility = showColon ? "visible" : "hidden";
+    showColon = !showColon;
+
+    dateEl.textContent =
+      `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} - ${months[d.getMonth()]} - ${String(d.getFullYear()).slice(-2)}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* SIZE */
+function updateSize() {
+    const base = Math.min(innerWidth, innerHeight);
+    document.documentElement.style.setProperty('--clock-size', base * 0.40 + "px");
+}
+updateSize();
+
+/* SAVE */
+function save() {
+    localStorage.setItem(STORE.zoom, zoom);
+    localStorage.setItem(STORE.font, fontIndex);
+    localStorage.setItem(STORE.format, is24Hour);
+    localStorage.setItem(STORE.color, colorIndex);
+    localStorage.setItem(STORE.landscape, isLandscape);
+    document.documentElement.style.setProperty('--zoom', zoom);
+    document.documentElement.style.setProperty('--clock-font', fonts[fontIndex]);
+    document.body.style.color = colors[colorIndex];
+}
+
+/* BUTTONS */
+zoomIn.onclick = () => { zoom=Math.min(zoom+0.05,2); save(); };
+zoomOut.onclick = () => { zoom=Math.max(zoom-0.05,0.4); save(); };
+fontBtn.onclick = () => { fontIndex=(fontIndex+1)%fonts.length; save(); };
+formatBtn.onclick = () => { is24Hour=!is24Hour; save(); updateClock(); };
+colorBtn.onclick = () => { colorIndex=(colorIndex+1)%colors.length; save(); };
+
+/* FULLSCREEN */
+fsBtn.onclick = async () => {
+    if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+        await document.exitFullscreen().catch(()=>{});
+    }
+    setTimeout(updateSize,300);
+};
+
+/* REAL SCREEN ROTATE (Landscape / Portrait) */
+rotateBtn.onclick = async () => {
+    try {
+        if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+        if (!screen.orientation) return alert("Rotation not supported");
+        if (!isLandscape) {
+            await screen.orientation.lock("landscape");
+            isLandscape = true;
+        } else {
+            await screen.orientation.lock("portrait");
+            isLandscape = false;
+        }
+        save();
+    } catch(e){
+        console.log("Rotation failed:", e);
+    }
+};
+
+/* AUTO HIDE */
+function showControls() {
+    controls.classList.remove("hide");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(()=>controls.classList.add("hide"),3000);
+}
+document.addEventListener("touchstart", showControls);
+document.addEventListener("mousemove", showControls);
+showControls();
+
+/* RESIZE */
+window.addEventListener("resize", updateSize);
+window.addEventListener("orientationchange", ()=>setTimeout(updateSize,300));
+document.addEventListener("fullscreenchange", ()=>setTimeout(updateSize,300));
+</script>
+
+</body>
+</html>
