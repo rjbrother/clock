@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ultimate Fullscreen Clock</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@600&family=League+Spartan:wght@700&family=Teko:wght@600&family=Archivo+Black&family=Barlow+Condensed:wght@700&family=Yantramanav:wght@700&family=Saira+Condensed:wght@700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --clock-size: 300px;
+    --zoom: 1;
+    --clock-font: 'Anton', sans-serif;
+}
+
+html, body {
+    margin: 0; padding: 0;
+    height: 100%; width: 100%;
+    background: black; color: white;
+    overflow: hidden; position: fixed;
+    display: flex; align-items: center; justify-content: center;
+}
+
+#wrap {
+    text-align: center;
+    width: 100%;
+    transition: transform 0.5s ease-in-out;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transform-origin: center center;
+}
+
+.rotated-center { transform: rotate(90deg); }
+
+#clock {
+    font-size: calc(var(--clock-size) * var(--zoom));
+    line-height: 1;
+    white-space: nowrap;
+    font-family: var(--clock-font);
+}
+
+#date {
+    margin-top: 0.15em;
+    font-size: calc(var(--clock-size) * var(--zoom) * 0.18);
+    letter-spacing: 0.12em;
+    opacity: 0.85;
+    font-family: var(--clock-font);
+}
+
+#colon { display: inline-block; width: 0.3em; }
+
+#controls {
+    position: fixed; bottom: 8px; right: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 999;
+    transition: opacity 0.3s ease;
+}
+
+#controls.hide { opacity: 0; pointer-events: none; }
+
+.control-btn {
+    width: 34px; height: 34px; font-size: 13px;
+    background: rgba(255,255,255,0.15); color: white;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
+}
+
+.color-btn {
+    background: linear-gradient(135deg, red, orange, yellow, green, blue, purple);
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="wrap">
+  <div id="clock">
+    <span id="hh">00</span><span id="colon">:</span><span id="mm">00</span>
+  </div>
+  <div id="date"></div>
+</div>
+
+<div id="controls">
+  <button class="control-btn" id="rotateBtn">R</button>
+  <button class="control-btn" id="zoomIn">+</button>
+  <button class="control-btn" id="zoomOut">-</button>
+  <button class="control-btn" id="fontBtn">F</button>
+  <button class="control-btn color-btn" id="colorBtn">C</button>
+  <button class="control-btn" id="formatBtn">H</button>
+  <button class="control-btn" id="fsBtn">FS</button>
+</div>
+
+<script>
+const wrap = document.getElementById("wrap");
+const hh = document.getElementById("hh");
+const mm = document.getElementById("mm");
+const colon = document.getElementById("colon");
+const dateEl = document.getElementById("date");
+
+/* --- DATA & STORAGE --- */
+const fonts = ["'Anton'", "'Bebas Neue'", "'Oswald'", "'League Spartan'", "'Teko'", "'Archivo Black'", "'Barlow Condensed'", "'Yantramanav'", "'Saira Condensed'", "'Exo 2'"];
+const colors = ["#ffffff", "#ff3b3b", "#ff9800", "#ffeb3b", "#4caf50", "#00e5ff", "#2196f3", "#9c27b0", "#ff2f92"];
+const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+let zoom = parseFloat(localStorage.getItem("c_zoom")) || 1;
+let fontIdx = parseInt(localStorage.getItem("c_font")) || 0;
+let colorIdx = parseInt(localStorage.getItem("c_color")) || 0;
+let is24Hour = localStorage.getItem("c_24h") !== "false";
+let isRotated = false;
+
+/* --- WAKE LOCK (Always on Display) --- */
+let wakeLock = null;
+async function requestWakeLock() {
+    try {
+        if ('keepWakeLock' in navigator) {
+            navigator.keepWakeLock(true); // KaiOS specific
+        } else if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+        console.log("Wake Lock Active");
+    } catch (err) {
+        console.log("Wake Lock Failed");
+    }
+}
+requestWakeLock();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') requestWakeLock(); });
+
+/* --- CORE FUNCTIONS --- */
+function updateClock() {
+    const d = new Date();
+    let h = d.getHours();
+    if (!is24Hour) h = h % 12 || 12;
+
+    hh.textContent = String(h).padStart(2,'0');
+    mm.textContent = String(d.getMinutes()).padStart(2,'0');
+    
+    dateEl.textContent = `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} - ${months[d.getMonth()]} - ${String(d.getFullYear()).slice(-2)}`;
+}
+
+function saveAndApply() {
+    localStorage.setItem("c_zoom", zoom);
+    localStorage.setItem("c_font", fontIdx);
+    localStorage.setItem("c_color", colorIdx);
+    localStorage.setItem("c_24h", is24Hour);
+    
+    document.documentElement.style.setProperty('--zoom', zoom);
+    document.documentElement.style.setProperty('--clock-font', fonts[fontIdx]);
+    document.body.style.color = colors[colorIdx];
+}
+
+function updateSize() {
+    const vW = window.innerWidth;
+    const vH = window.innerHeight;
+    let base = isRotated ? Math.min(vW, vH) * 1.4 : Math.min(vW, vH);
+    document.documentElement.style.setProperty('--clock-size', (base * 0.38) + "px");
+}
+
+/* --- BUTTON EVENTS --- */
+document.getElementById("rotateBtn").onclick = () => { isRotated = !isRotated; wrap.classList.toggle("rotated-center"); setTimeout(updateSize, 500); };
+document.getElementById("zoomIn").onclick = () => { zoom += 0.05; saveAndApply(); };
+document.getElementById("zoomOut").onclick = () => { zoom -= 0.05; saveAndApply(); };
+document.getElementById("fontBtn").onclick = () => { fontIdx = (fontIdx + 1) % fonts.length; saveAndApply(); };
+document.getElementById("colorBtn").onclick = () => { colorIdx = (colorIdx + 1) % colors.length; saveAndApply(); };
+document.getElementById("formatBtn").onclick = () => { is24Hour = !is24Hour; saveAndApply(); updateClock(); };
+document.getElementById("fsBtn").onclick = () => {
+    const el = document.documentElement;
+    const rfs = el.requestFullscreen || el.mozRequestFullScreen || el.webkitRequestFullscreen;
+    if (rfs) rfs.call(el);
+    setTimeout(updateSize, 500);
+};
+
+/* --- INITIALIZE --- */
+setInterval(updateClock, 1000);
+updateClock();
+saveAndApply();
+updateSize();
+window.onresize = updateSize;
+
+// UI Auto-hide
+let timer;
+function showUI() {
+    document.getElementById("controls").classList.remove("hide");
+    clearTimeout(timer);
+    timer = setTimeout(() => document.getElementById("controls").classList.add("hide"), 3000);
+}
+document.addEventListener("touchstart", showUI);
+document.addEventListener("click", showUI);
+</script>
+
+</body>
+</html>
