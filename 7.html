@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ultimate Jio Clock - Wake Lock Fixed</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@600&family=Teko:wght@600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --clock-size: 240px;
+    --zoom: 1;
+    --move-val: 0px;
+    --clock-font: 'Anton', sans-serif;
+}
+
+html, body {
+    margin: 0; padding: 0;
+    height: 100%; width: 100%;
+    background: black; color: white;
+    overflow: hidden; position: fixed;
+}
+
+#wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(calc(-50% + var(--move-val)), -50%);
+    text-align: center;
+    width: 100%;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+}
+
+#wrap.rotated {
+    transform: translate(-50%, calc(-50% + var(--move-val))) rotate(90deg);
+}
+
+#clock {
+    font-size: calc(var(--clock-size) * var(--zoom));
+    line-height: 1;
+    font-family: var(--clock-font);
+}
+
+#date {
+    margin-top: 5px;
+    font-size: calc(var(--clock-size) * var(--zoom) * 0.30);
+    opacity: 0.85;
+    font-family: var(--clock-font);
+}
+
+#controls {
+    position: fixed; bottom: 8px; right: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
+
+.control-btn {
+    width: 34px; height: 34px; font-size: 11px;
+    background: rgba(255,255,255,0.2); color: white;
+    border: 1px solid rgba(255,255,255,0.4); border-radius: 6px;
+}
+
+.color-btn { background: linear-gradient(135deg, red, blue); }
+.hide-ui { opacity: 0; pointer-events: none; }
+</style>
+</head>
+
+<body>
+
+<div id="wrap">
+  <div id="clock">
+    <span id="hh">00</span><span id="colon">:</span><span id="mm">00</span>
+  </div>
+  <div id="date">--</div>
+</div>
+
+<div id="controls">
+  <button class="control-btn" id="moveL">L</button>
+  <button class="control-btn" id="moveR">R</button>
+  <button class="control-btn" id="rotateBtn">Rot</button>
+  <button class="control-btn" id="zoomIn">+</button>
+  <button class="control-btn" id="zoomOut">-</button>
+  <button class="control-btn" id="fontBtn">F</button>
+  <button class="control-btn color-btn" id="colorBtn">C</button>
+  <button class="control-btn" id="fsBtn">FS</button>
+</div>
+
+<script>
+var wrap = document.getElementById("wrap");
+var hh = document.getElementById("hh");
+var mm = document.getElementById("mm");
+var colon = document.getElementById("colon");
+var dateEl = document.getElementById("date");
+var controls = document.getElementById("controls");
+
+var fonts = ["'Anton'", "'Bebas Neue'", "'Oswald'", "'Teko'"];
+var colors = ["#ffffff", "#ff3b3b", "#ff9800", "#ffeb3b", "#4caf50", "#00e5ff", "#2196f3", "#9c27b0"];
+var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+var zoom = 1.0;
+var fontIdx = 0;
+var colorIdx = 0;
+var isRotated = false;
+var showColon = true;
+var moveVal = 0;
+
+// --- WAKE LOCK (Always on Display) FIX ---
+function activateWakeLock() {
+    // 1. KaiOS Specific WakeLock
+    if (navigator.requestWakeLock) {
+        navigator.requestWakeLock('screen');
+    }
+    // 2. Another KaiOS Variant
+    if (navigator.keepWakeLock) {
+        navigator.keepWakeLock(true);
+    }
+    // 3. Modern Web WakeLock Fallback
+    if (navigator.wakeLock) {
+        navigator.wakeLock.request('screen').catch(function(e){});
+    }
+}
+activateWakeLock();
+// Re-activate if app comes back from background
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === 'visible') activateWakeLock();
+});
+
+function updateClock() {
+    var d = new Date();
+    var h = d.getHours() % 12 || 12;
+    var m = d.getMinutes();
+    hh.innerHTML = (h < 10 ? "0" + h : h);
+    mm.innerHTML = (m < 10 ? "0" + m : m);
+    colon.style.visibility = showColon ? "visible" : "hidden";
+    showColon = !showColon;
+    dateEl.innerHTML = days[d.getDay()] + ", " + (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + " - " + months[d.getMonth()] + " - " + String(d.getFullYear()).slice(-2);
+}
+
+// MOVE LOGIC
+document.getElementById("moveL").onclick = function() { moveVal -= 15; applyPos(); };
+document.getElementById("moveR").onclick = function() { moveVal += 15; applyPos(); };
+
+function applyPos() {
+    document.documentElement.style.setProperty('--move-val', moveVal + "px");
+    resetTimer();
+}
+
+var uiTimer;
+function resetTimer() {
+    controls.className = "";
+    clearTimeout(uiTimer);
+    uiTimer = setTimeout(function() { controls.className = "hide-ui"; }, 3000);
+}
+
+document.getElementById("rotateBtn").onclick = function() {
+    isRotated = !isRotated;
+    wrap.className = isRotated ? "rotated" : "";
+    moveVal = 0;
+    applyPos();
+    setTimeout(updateSize, 300);
+    resetTimer();
+};
+
+document.getElementById("colorBtn").onclick = function() {
+    colorIdx = (colorIdx + 1) % colors.length;
+    document.body.style.color = colors[colorIdx];
+    resetTimer();
+};
+
+document.getElementById("zoomIn").onclick = function() { zoom += 0.05; apply(); resetTimer(); };
+document.getElementById("zoomOut").onclick = function() { zoom -= 0.05; apply(); resetTimer(); };
+document.getElementById("fontBtn").onclick = function() { fontIdx = (fontIdx + 1) % fonts.length; apply(); resetTimer(); };
+
+document.getElementById("fsBtn").onclick = function() {
+    var el = document.documentElement;
+    var rfs = el.requestFullscreen || el.mozRequestFullScreen || el.webkitRequestFullscreen;
+    if (rfs) rfs.call(el);
+    resetTimer();
+};
+
+function apply() {
+    document.documentElement.style.setProperty('--zoom', zoom);
+    document.documentElement.style.setProperty('--clock-font', fonts[fontIdx]);
+}
+
+function updateSize() {
+    var base = isRotated ? Math.min(window.innerWidth, window.innerHeight) * 1.5 : Math.min(window.innerWidth, window.innerHeight);
+    document.documentElement.style.setProperty('--clock-size', (base * 0.35) + "px");
+}
+
+document.onclick = resetTimer;
+document.ontouchstart = resetTimer;
+
+setInterval(updateClock, 1000);
+updateClock();
+updateSize();
+resetTimer(); 
+window.onresize = updateSize;
+</script>
+
+</body>
+</html>
