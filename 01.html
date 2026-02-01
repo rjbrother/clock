@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JioPhone Rotation Test</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-family: sans-serif;
+        }
+
+        /* Video ko background mein set karna */
+        #bgVideo {
+            position: fixed;
+            top: 0; left: 0;
+            min-width: 100%; min-height: 100%;
+            z-index: -1;
+            background: #222;
+        }
+
+        /* Overlay Text jo video ke upar dikhega */
+        #overlay {
+            position: absolute;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        #fsButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <video id="bgVideo" autoplay muted loop playsinline>
+        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+        Your browser does not support video.
+    </video>
+
+    <div id="overlay">
+        <h1>TESTING ROTATION</h1>
+        <p>Agar video fullscreen hone par rotate ho gayi,<br>toh hum clock mein bhi ye laga sakte hain.</p>
+        
+        <button id="fsButton">FULLSCREEN ROTATE</button>
+    </div>
+
+    <script>
+        var video = document.getElementById("bgVideo");
+        var btn = document.getElementById("fsButton");
+
+        btn.onclick = function() {
+            // Fullscreen Request
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) { // Firefox/KaiOS support
+                video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            }
+            
+            // Note: KaiOS par jab video fullscreen hoti hai, 
+            // tabhi system orientation change hone ka chance hota hai.
+            video.play();
+        };
+
+        // Check if orientation changes
+        window.addEventListener("resize", function() {
+            console.log("Resize event detected! Width: " + window.innerWidth);
+        });
+    </script>
+</body>
+</html>
