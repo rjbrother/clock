@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fullscreen Clock (JioPhone Ready)</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@600&family=League+Spartan:wght@700&family=Teko:wght@600&family=Archivo+Black&family=Barlow+Condensed:wght@700&family=Yantramanav:wght@700&family=Saira+Condensed:wght@700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --clock-size: 300px;
+    --zoom: 1;
+    --clock-font: 'Anton', sans-serif;
+}
+
+/* KaiOS special: ensure no scrolling and full black background */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background: black;
+    color: white;
+    overflow: hidden;
+    position: fixed; /* Prevents bounce scrolling on mobile */
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#wrap {
+    text-align: center;
+    width: 100%;
+}
+
+#clock {
+    font-size: calc(var(--clock-size) * var(--zoom));
+    line-height: 1;
+    white-space: nowrap;
+    font-family: var(--clock-font);
+}
+
+#date {
+    margin-top: 0.15em;
+    font-size: calc(var(--clock-size) * var(--zoom) * 0.18);
+    letter-spacing: 0.12em;
+    opacity: 0.85;
+    font-family: var(--clock-font);
+}
+
+#colon {
+    display: inline-block;
+    width: 0.3em;
+}
+
+/* Controls - Adjusted for small screens like JioPhone */
+#controls {
+    position: fixed;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 999;
+    transition: opacity 0.3s ease;
+}
+
+#controls.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.control-btn {
+    width: 32px; /* Small buttons for JioPhone */
+    height: 32px;
+    font-size: 12px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-btn {
+    background: linear-gradient(135deg, red, blue);
+}
+</style>
+</head>
+
+<body>
+
+<div id="wrap">
+  <div id="clock">
+    <span id="hh">00</span><span id="colon">:</span><span id="mm">00</span>
+  </div>
+  <div id="date"></div>
+</div>
+
+<div id="controls">
+  <button class="control-btn" id="zoomIn">+</button>
+  <button class="control-btn" id="zoomOut">-</button>
+  <button class="control-btn" id="fontBtn">F</button>
+  <button class="control-btn" id="formatBtn">H</button>
+  <button class="control-btn color-btn" id="colorBtn">C</button>
+  <button class="control-btn" id="rotateBtn">R</button>
+  <button class="control-btn" id="fsBtn">FS</button>
+</div>
+
+<script>
+const hh = document.getElementById("hh");
+const mm = document.getElementById("mm");
+const colon = document.getElementById("colon");
+const dateEl = document.getElementById("date");
+const controls = document.getElementById("controls");
+
+/* LOAD SETTINGS */
+const STORE = {
+  zoom: "clock_zoom",
+  font: "clock_font",
+  format: "clock_24h",
+  color: "clock_color"
+};
+
+const fonts = ["'Anton'", "'Bebas Neue'", "'Oswald'", "'Teko'", "'Exo 2'"];
+const colors = ["#ffffff", "#ff3b3b", "#ff9800", "#ffeb3b", "#4caf50", "#00e5ff", "#2196f3", "#9c27b0"];
+
+let zoom = parseFloat(localStorage.getItem(STORE.zoom)) || 1;
+let fontIndex = parseInt(localStorage.getItem(STORE.font)) || 0;
+let is24Hour = localStorage.getItem(STORE.format) !== "false";
+let colorIndex = parseInt(localStorage.getItem(STORE.color)) || 0;
+
+function save() {
+    localStorage.setItem(STORE.zoom, zoom);
+    localStorage.setItem(STORE.font, fontIndex);
+    localStorage.setItem(STORE.format, is24Hour);
+    localStorage.setItem(STORE.color, colorIndex);
+    applyStyles();
+}
+
+function applyStyles() {
+    document.documentElement.style.setProperty('--zoom', zoom);
+    document.documentElement.style.setProperty('--clock-font', fonts[fontIndex]);
+    document.body.style.color = colors[colorIndex];
+}
+
+/* CLOCK LOGIC */
+let showColon = true;
+function updateClock() {
+    const d = new Date();
+    let h = d.getHours();
+    if (!is24Hour) h = h % 12 || 12;
+    hh.textContent = String(h).padStart(2,'0');
+    mm.textContent = String(d.getMinutes()).padStart(2,'0');
+    colon.style.visibility = showColon ? "visible" : "hidden";
+    showColon = !showColon;
+    
+    const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    dateEl.textContent = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+/* KAIOS FULLSCREEN LOGIC */
+const fsBtn = document.getElementById("fsBtn");
+fsBtn.onclick = function() {
+    const doc = window.document;
+    const docEl = doc.documentElement;
+
+    const requestFullscreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+    const exitFullscreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+    if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+        if (requestFullscreen) {
+            requestFullscreen.call(docEl);
+        } else {
+            // Fallback for JioPhone Browser
+            window.scrollTo(0, 1);
+        }
+    } else {
+        if (exitFullscreen) {
+            exitFullscreen.call(doc);
+        }
+    }
+    setTimeout(updateSize, 500);
+};
+
+/* OTHER BUTTONS */
+document.getElementById("zoomIn").onclick = () => { zoom += 0.1; save(); };
+document.getElementById("zoomOut").onclick = () => { zoom -= 0.1; save(); };
+document.getElementById("fontBtn").onclick = () => { fontIndex = (fontIndex + 1) % fonts.length; save(); };
+document.getElementById("colorBtn").onclick = () => { colorIndex = (colorIndex + 1) % colors.length; save(); };
+document.getElementById("formatBtn").onclick = () => { is24Hour = !is24Hour; save(); updateClock(); };
+
+function updateSize() {
+    const base = Math.min(window.innerWidth, window.innerHeight);
+    document.documentElement.style.setProperty('--clock-size', (base * 0.35) + "px");
+}
+
+/* INIT */
+setInterval(updateClock, 1000);
+updateClock();
+updateSize();
+applyStyles();
+window.addEventListener("resize", updateSize);
+
+// Auto-hide controls
+let hideTimer;
+function showControls() {
+    controls.classList.remove("hide");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => controls.classList.add("hide"), 3000);
+}
+document.addEventListener("touchstart", showControls);
+document.addEventListener("click", showControls);
+</script>
+
+</body>
+</html>
