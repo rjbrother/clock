@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fullscreen Clock</title>
+<title>Clock</title>
 
-<!-- CLOCK FONTS -->
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@600&family=League+Spartan:wght@700&family=Teko:wght@600&family=Archivo+Black&family=Barlow+Condensed:wght@700&family=Yantramanav:wght@700&family=Saira+Condensed:wght@700&family=Exo+2:wght@700&display=swap" rel="stylesheet">
 
 <style>
@@ -15,76 +14,66 @@
     --clock-font: 'Anton', sans-serif;
 }
 
-html, body {
-    margin: 0;
-    height: 100%;
-    background: black;
-    color: white;
-    overflow: hidden;
+html,body{
+    margin:0;
+    height:100%;
+    background:black;
+    color:white;
+    overflow:hidden;
 }
 
-body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
-#wrap {
-    transform: rotate(90deg);
-    text-align: center;
+#wrap{
+    transform:rotate(90deg);
+    text-align:center;
 }
 
-#clock {
-    font-size: calc(var(--clock-size) * var(--zoom));
-    line-height: 1;
-    white-space: nowrap;
-    font-family: var(--clock-font);
+#clock{
+    font-size:calc(var(--clock-size)*var(--zoom));
+    line-height:1;
+    white-space:nowrap;
+    font-family:var(--clock-font);
 }
 
-#date {
-    margin-top: 0.15em;
-    font-size: calc(var(--clock-size) * var(--zoom) * 0.18);
-    letter-spacing: 0.12em;
-    opacity: 0.85;
-    font-family: var(--clock-font);
+#date{
+    margin-top:.15em;
+    font-size:calc(var(--clock-size)*var(--zoom)*.18);
+    letter-spacing:.12em;
+    opacity:.85;
+    font-family:var(--clock-font);
 }
 
-#colon {
-    display: inline-block;
-    width: 0.3em;
+#colon{
+    display:inline-block;
+    width:.3em;
 }
 
-/* controls */
-#controls {
-    position: fixed;
-    bottom: 12px;
-    right: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    z-index: 999;
-    transition: opacity 0.3s ease;
+#controls{
+    position:fixed;
+    bottom:12px;
+    right:12px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    z-index:999;
 }
 
-#controls.hide {
-    opacity: 0;
-    pointer-events: none;
+.control-btn{
+    width:38px;
+    height:38px;
+    background:rgba(255,255,255,.12);
+    color:white;
+    border:1px solid rgba(255,255,255,.3);
+    border-radius:8px;
 }
 
-.control-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 14px;
-    background: rgba(255,255,255,0.12);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 8px;
-}
-
-/* COLOR BUTTON */
-.color-btn {
-    background: linear-gradient(135deg, red, orange, yellow, green, cyan, blue, purple);
-    font-weight: bold;
+.color-btn{
+    background:linear-gradient(135deg,red,orange,yellow,green,cyan,blue,purple);
 }
 </style>
 </head>
@@ -104,135 +93,73 @@ body {
   <button class="control-btn" id="fontBtn">F</button>
   <button class="control-btn" id="formatBtn">H</button>
   <button class="control-btn color-btn" id="colorBtn">C</button>
-  <button class="control-btn" id="fsBtn">?</button>
+  <button class="control-btn" id="fsBtn">⛶</button>
 </div>
 
 <script>
-/* ELEMENTS */
-const hh = document.getElementById("hh");
+const hh = hh=document.getElementById("hh");
 const mm = document.getElementById("mm");
 const colon = document.getElementById("colon");
 const dateEl = document.getElementById("date");
-const controls = document.getElementById("controls");
 
-/* STORAGE */
-const STORE = {
-  zoom: "clock_zoom",
-  font: "clock_font",
-  format: "clock_24h",
-  color: "clock_color"
-};
-
-/* FONTS */
-const fonts = [
-  "'Anton', sans-serif",
-  "'Bebas Neue', sans-serif",
-  "'Oswald', sans-serif",
-  "'League Spartan', sans-serif",
-  "'Teko', sans-serif",
-  "'Archivo Black', sans-serif",
-  "'Barlow Condensed', sans-serif",
-  "'Yantramanav', sans-serif",
-  "'Saira Condensed', sans-serif",
-  "'Exo 2', sans-serif"
+const fonts=[
+"'Anton',sans-serif","'Bebas Neue',sans-serif","'Oswald',sans-serif",
+"'League Spartan',sans-serif","'Teko',sans-serif","'Archivo Black',sans-serif"
 ];
 
-/* COLORS */
-const colors = [
-  "#ffffff","#ff3b3b","#ff9800","#ffeb3b","#4caf50",
-  "#00e5ff","#2196f3","#3f51b5","#9c27b0","#ff2f92"
-];
+const colors=["#fff","#ff3b3b","#ff9800","#ffeb3b","#4caf50","#00e5ff"];
 
-/* LOAD */
-let zoom = parseFloat(localStorage.getItem(STORE.zoom)) || 1;
-let fontIndex = parseInt(localStorage.getItem(STORE.font)) || 0;
-let is24Hour = localStorage.getItem(STORE.format) !== "false";
-let colorIndex = parseInt(localStorage.getItem(STORE.color)) || 0;
+let zoom=1,fontIndex=0,is24=true,colorIndex=0;
 
-document.documentElement.style.setProperty('--zoom', zoom);
-document.documentElement.style.setProperty('--clock-font', fonts[fontIndex]);
-document.body.style.color = colors[colorIndex];
+const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+let blink=true;
 
-let showColon = true;
-let hideTimer;
-
-/* CLOCK */
-function updateClock() {
-    const d = new Date();
-    let h = d.getHours();
-    if (!is24Hour) h = h % 12 || 12;
-
-    hh.textContent = String(h).padStart(2,'0');
-    mm.textContent = String(d.getMinutes()).padStart(2,'0');
-
-    colon.style.visibility = showColon ? "visible" : "hidden";
-    showColon = !showColon;
-
-    dateEl.textContent =
-      `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} - ${months[d.getMonth()]} - ${String(d.getFullYear()).slice(-2)}`;
+function updateClock(){
+ const d=new Date();
+ let h=d.getHours();
+ if(!is24)h=h%12||12;
+ hh.textContent=String(h).padStart(2,"0");
+ mm.textContent=String(d.getMinutes()).padStart(2,"0");
+ colon.style.visibility=blink?"visible":"hidden";
+ blink=!blink;
+ dateEl.textContent=
+ `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,"0")} - ${months[d.getMonth()]} - ${String(d.getFullYear()).slice(-2)}`;
 }
-setInterval(updateClock, 1000);
+setInterval(updateClock,1000);
 updateClock();
 
-/* SIZE */
-function updateSize() {
-    const base = Math.min(innerWidth, innerHeight);
-    document.documentElement.style.setProperty('--clock-size', base * 0.40 + "px");
+function updateSize(){
+ const base=Math.min(innerWidth,innerHeight);
+ document.documentElement.style.setProperty("--clock-size",base*.4+"px");
 }
 updateSize();
 
-/* SAVE */
-function save() {
-    localStorage.setItem(STORE.zoom, zoom);
-    localStorage.setItem(STORE.font, fontIndex);
-    localStorage.setItem(STORE.format, is24Hour);
-    localStorage.setItem(STORE.color, colorIndex);
+zoomIn.onclick=()=>{zoom=Math.min(zoom+.05,2);document.documentElement.style.setProperty("--zoom",zoom);}
+zoomOut.onclick=()=>{zoom=Math.max(zoom-.05,.4);document.documentElement.style.setProperty("--zoom",zoom);}
+fontBtn.onclick=()=>{fontIndex=(fontIndex+1)%fonts.length;document.documentElement.style.setProperty("--clock-font",fonts[fontIndex]);}
+formatBtn.onclick=()=>{is24=!is24;updateClock();}
+colorBtn.onclick=()=>{colorIndex=(colorIndex+1)%colors.length;document.body.style.color=colors[colorIndex];}
 
-    document.documentElement.style.setProperty('--zoom', zoom);
-    document.documentElement.style.setProperty('--clock-font', fonts[fontIndex]);
-    document.body.style.color = colors[colorIndex];
-}
+/* 🔥 JIOPHONE SAFE FULLSCREEN */
+const isJioPhone=/KaiOS|JioPhone/i.test(navigator.userAgent);
 
-/* BUTTONS */
-zoomIn.onclick = () => { zoom = Math.min(zoom+0.05,2); save(); };
-zoomOut.onclick = () => { zoom = Math.max(zoom-0.05,0.4); save(); };
-fontBtn.onclick = () => { fontIndex = (fontIndex+1)%fonts.length; save(); };
-formatBtn.onclick = () => { is24Hour=!is24Hour; save(); updateClock(); };
-colorBtn.onclick = () => { colorIndex = (colorIndex+1)%colors.length; save(); };
-
-/* AUTO HIDE */
-function showControls() {
-    controls.classList.remove("hide");
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(()=>controls.classList.add("hide"),3000);
-}
-document.addEventListener("touchstart", showControls);
-document.addEventListener("mousemove", showControls);
-showControls();
-
-/* RESIZE */
-window.addEventListener("resize", updateSize);
-window.addEventListener("orientationchange", ()=>setTimeout(updateSize,300));
-document.addEventListener("fullscreenchange", ()=>setTimeout(updateSize,300));
-</script>
-
-<script>
-/* FULLSCREEN BUTTON ONLY */
-async function enableWakeLock() {
-    try { await navigator.wakeLock.request("screen"); } catch(e){}
-}
-
-fsBtn.onclick = async () => {
-    if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen().catch(()=>{});
-        enableWakeLock();
-    } else {
-        document.exitFullscreen();
-    }
-    setTimeout(updateSize,300);
+fsBtn.onclick=()=>{
+ if(isJioPhone){
+   alert("JioPhone:\nMenu → Full screen select karein");
+   document.body.style.position="fixed";
+   document.body.style.inset="0";
+   document.body.style.overflow="hidden";
+   updateSize();
+ }else{
+   if(!document.fullscreenElement){
+     document.documentElement.requestFullscreen().catch(()=>{});
+   }else{
+     document.exitFullscreen();
+   }
+ }
+ setTimeout(updateSize,300);
 };
 </script>
 
