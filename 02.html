@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ultimate Jio Clock - Digital Edition</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@600&family=League+Spartan:wght@700&family=Teko:wght@600&family=Archivo+Black&family=Barlow+Condensed:wght@700&family=Yantramanav:wght@700&family=Saira+Condensed:wght@700&family=Exo+2:wght@700&family=Righteous&family=Orbitron:wght@700&family=Lobster&family=Abril+Fatface&family=Kanit:wght@800&family=Saira+Extra+Condensed:wght@800&family=Big+Shoulders+Display:wght@800&family=Share+Tech+Mono&family=VT323&family=Wallpoet&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --clock-size: 240px;
+    --zoom: 1;
+    --move-val: 0px;
+    --clock-font: 'Anton', sans-serif;
+}
+
+html, body {
+    margin: 0; padding: 0;
+    height: 100%; width: 100%;
+    background: black; color: white;
+    overflow: hidden; position: fixed;
+}
+
+#wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    width: 100vw; 
+    transform: translate(calc(-50% + var(--move-val)), -50%);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+#wrap.rotated {
+    transform: translate(-50%, calc(-50% + var(--move-val))) rotate(90deg);
+}
+
+#clock {
+    font-size: calc(var(--clock-size) * var(--zoom));
+    line-height: 1;
+    font-family: var(--clock-font);
+    white-space: nowrap;
+}
+
+#date {
+    margin-top: -50px;
+    font-size: calc(var(--clock-size) * var(--zoom) * 0.35);
+    opacity: 1;
+    font-family: var(--clock-font);
+    white-space: nowrap;
+    text-transform: uppercase; 
+}
+
+#controls {
+    position: fixed; bottom: 8px; right: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
+
+.control-btn {
+    width: 34px; height: 34px; font-size: 11px;
+    background: rgba(255,255,255,0.2); color: white;
+    border: 1px solid rgba(255,255,255,0.4); border-radius: 6px;
+}
+
+.color-btn { background: linear-gradient(135deg, red, blue); }
+.hide-ui { opacity: 0; pointer-events: none; }
+</style>
+</head>
+
+<body>
+
+<div id="wrap">
+  <div id="clock">
+    <span id="hh">00</span><span id="colon">:</span><span id="mm">00</span>
+  </div>
+  <div id="date">--</div>
+</div>
+
+<div id="controls">
+  <button class="control-btn" id="moveL">&#x25C0</button>
+  <button class="control-btn" id="moveR">&#x25B6</button>
+  <button class="control-btn" id="rotateBtn">&#x27F3</button>
+  <button class="control-btn" id="zoomIn">&#x2795</button>
+  <button class="control-btn" id="zoomOut">&#x2796</button>
+  <button class="control-btn" id="fontBtn">&#x1D487</button>
+  <button class="control-btn color-btn" id="colorBtn">&#x1F3A8</button>
+  <button class="control-btn" id="fsBtn">&#x26F6</button>
+</div>
+
+<script>
+var wrap = document.getElementById("wrap");
+var hh = document.getElementById("hh");
+var mm = document.getElementById("mm");
+var colon = document.getElementById("colon");
+var dateEl = document.getElementById("date");
+var controls = document.getElementById("controls");
+
+var fonts = [
+  "'Anton', sans-serif",
+  "'Bebas Neue', sans-serif",
+  "'Oswald', sans-serif",
+  "'League Spartan', sans-serif",
+  "'Teko', sans-serif",
+  "'Archivo Black', sans-serif",
+  "'Barlow Condensed', sans-serif",
+  "'Yantramanav', sans-serif",
+  "'Saira Condensed', sans-serif",
+  "'Exo 2', sans-serif",
+  "'Righteous', cursive",
+  "'Orbitron', sans-serif",
+  "'Lobster', cursive",
+  "'Abril Fatface', serif",
+  "'Kanit', sans-serif",
+  "'Saira Extra Condensed', sans-serif",
+  "'Big Shoulders Display', sans-serif",
+  "'Share Tech Mono', monospace",
+  "'VT323', monospace",
+  "'Wallpoet', cursive"
+];
+
+var colors = ["#ffffff", "#ff3b3b", "#ff9800", "#ffeb3b", "#4caf50", "#00e5ff", "#2196f3", "#9c27b0"];
+var days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+var months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+var zoom = parseFloat(localStorage.getItem("jio_zoom")) || 1.0;
+var fontIdx = parseInt(localStorage.getItem("jio_font")) || 0;
+var colorIdx = parseInt(localStorage.getItem("jio_color")) || 0;
+var isRotated = false;
+var showColon = true;
+var moveVal = 0;
+
+function activateWakeLock() {
+    if (navigator.requestWakeLock) navigator.requestWakeLock('screen');
+    if (navigator.keepWakeLock) navigator.keepWakeLock(true);
+    if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(function(e){});
+}
+activateWakeLock();
+
+function updateClock() {
+    var d = new Date();
+    var h = d.getHours() % 12 || 12;
+    var m = d.getMinutes();
+    hh.innerHTML = (h < 10 ? "0" + h : h);
+    mm.innerHTML = (m < 10 ? "0" + m : m);
+    colon.style.visibility = showColon ? "visible" : "hidden";
+    showColon = !showColon;
+    dateEl.innerHTML = days[d.getDay()] + ", " + (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + " - " + months[d.getMonth()];
+}
+
+function saveSettings() {
+    localStorage.setItem("jio_zoom", zoom);
+    localStorage.setItem("jio_font", fontIdx);
+    localStorage.setItem("jio_color", colorIdx);
+}
+
+function applyStyles() {
+    document.documentElement.style.setProperty('--zoom', zoom);
+    document.documentElement.style.setProperty('--clock-font', fonts[fontIdx]);
+    document.body.style.color = colors[colorIdx];
+}
+
+function applyPos() {
+    document.documentElement.style.setProperty('--move-val', moveVal + "px");
+    resetTimer();
+}
+
+var uiTimer;
+function resetTimer() {
+    controls.className = "";
+    clearTimeout(uiTimer);
+    uiTimer = setTimeout(function() { controls.className = "hide-ui"; }, 3000);
+}
+
+function moveLeft() { moveVal -= 15; applyPos(); }
+function moveRight() { moveVal += 15; applyPos(); }
+function toggleRotate() { 
+    isRotated = !isRotated; 
+    wrap.className = isRotated ? "rotated" : ""; 
+    moveVal = 0; applyPos(); 
+    setTimeout(updateSize, 300); 
+}
+function colorNext() { colorIdx = (colorIdx + 1) % colors.length; saveSettings(); applyStyles(); resetTimer(); }
+function zoomIn() { zoom += 0.05; saveSettings(); applyStyles(); resetTimer(); }
+function zoomOut() { zoom -= 0.05; saveSettings(); applyStyles(); resetTimer(); }
+function fontNext() { fontIdx = (fontIdx + 1) % fonts.length; saveSettings(); applyStyles(); resetTimer(); }
+function toggleFS() { 
+    var el = document.documentElement; 
+    var rfs = el.requestFullscreen || el.mozRequestFullScreen || el.webkitRequestFullscreen;
+    if (rfs) rfs.call(el); 
+    resetTimer(); 
+}
+
+document.getElementById("moveL").onclick = moveLeft;
+document.getElementById("moveR").onclick = moveRight;
+document.getElementById("rotateBtn").onclick = toggleRotate;
+document.getElementById("colorBtn").onclick = colorNext;
+document.getElementById("zoomIn").onclick = zoomIn;
+document.getElementById("zoomOut").onclick = zoomOut;
+document.getElementById("fontBtn").onclick = fontNext;
+document.getElementById("fsBtn").onclick = toggleFS;
+
+document.addEventListener('keydown', function(e) {
+    switch(e.key) {
+        case '4': moveLeft(); break;
+        case '6': moveRight(); break;
+        case '5': toggleRotate(); break;
+        case '7': zoomIn(); break;
+        case '9': zoomOut(); break;
+        case '8': fontNext(); break;
+        case '0': colorNext(); break;
+        case '#': toggleFS(); break;
+        case '*': moveVal = 0; applyPos(); break; 
+    }
+    resetTimer();
+});
+
+function updateSize() {
+    var base = isRotated ? Math.min(window.innerWidth, window.innerHeight) * 1.5 : Math.min(window.innerWidth, window.innerHeight);
+    document.documentElement.style.setProperty('--clock-size', (base * 0.35) + "px");
+}
+
+document.onclick = resetTimer;
+document.ontouchstart = resetTimer;
+
+setInterval(updateClock, 1000);
+updateClock();
+applyStyles();
+updateSize();
+resetTimer(); 
+window.onresize = updateSize;
+</script>
+
+</body>
+</html>
