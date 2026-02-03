@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ultimate Jio Clock - Battery Edition</title>
+<title>Ultimate Jio Clock - Digital Edition</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@600&family=League+Spartan:wght@700&family=Teko:wght@600&family=Archivo+Black&family=Barlow+Condensed:wght@700&family=Yantramanav:wght@700&family=Saira+Condensed:wght@700&family=Exo+2:wght@700&family=Righteous&family=Orbitron:wght@700&family=Lobster&family=Abril+Fatface&family=Kanit:wght@800&family=Saira+Extra+Condensed:wght@800&family=Big+Shoulders+Display:wght@800&family=Share+Tech+Mono&family=VT323&family=Wallpoet&display=swap" rel="stylesheet">
 
@@ -22,75 +22,76 @@ html, body {
     overflow: hidden; position: fixed;
 }
 
-/* Battery Styling */
-#battery {
-    position: fixed;
-    top: 10px;
-    right: 15px;
-    font-size: 20px;
-    font-family: 'Oswald', sans-serif;
-    color: white;
-    z-index: 2000;
+#click-surface {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; z-index: 1;
 }
 
 #wrap {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    justify-content: center;
-    width: 100vw; 
+    position: absolute; top: 50%; left: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    width: fit-content; 
     transform: translate(calc(-50% + var(--move-val)), -50%);
     transition: transform 0.3s ease;
-    text-align: center;
+    text-align: center; z-index: 2;
+    pointer-events: none;
 }
 
 #wrap.rotated {
     transform: translate(-50%, calc(-50% + var(--move-val))) rotate(90deg);
 }
 
+#battery-box {
+    width: 100%; display: flex;
+    justify-content: center; margin-bottom: 5px;
+}
+
+#battery {
+    font-size: calc(var(--clock-size) * var(--zoom) * 0.22);
+    font-family: var(--clock-font);
+    color: white !important; opacity: 0.9;
+    line-height: 1.1; white-space: nowrap;
+    margin: 0 5px; 
+}
+
 #clock {
     font-size: calc(var(--clock-size) * var(--zoom));
-    line-height: 1;
-    font-family: var(--clock-font);
+    line-height: 1; font-family: var(--clock-font);
     white-space: nowrap;
 }
 
 #date {
-    margin-top: -50px;
+    margin-top: 1px;
     font-size: calc(var(--clock-size) * var(--zoom) * 0.35);
-    opacity: 1;
-    font-family: var(--clock-font);
-    white-space: nowrap;
-    text-transform: uppercase; 
+    opacity: 1; font-family: var(--clock-font);
+    white-space: nowrap; text-transform: uppercase; 
 }
 
 #controls {
     position: fixed; bottom: 8px; right: 8px;
     display: flex; flex-direction: column; gap: 4px;
-    z-index: 1000;
-    transition: opacity 0.5s ease;
+    z-index: 1000; transition: opacity 0.5s ease;
 }
 
 .control-btn {
-    width: 36px; height: 36px; font-size: 16px;
+    width: 34px; height: 34px; font-size: 11px;
     background: rgba(255,255,255,0.2); color: white;
-    border: 1px solid rgba(255,255,255,0.4); border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,0.4); border-radius: 6px;
+    pointer-events: auto;
 }
 
-.color-btn { background: linear-gradient(135deg, #ff3b3b, #2196f3); }
+.color-btn { background: linear-gradient(135deg, red, blue); }
 .hide-ui { opacity: 0; pointer-events: none; }
 </style>
 </head>
 
 <body>
 
-<div id="battery">--%</div>
+<div id="click-surface"></div>
 
 <div id="wrap">
+  <div id="battery-box"><div id="battery">--%</div></div>
   <div id="clock">
     <span id="hh">00</span><span id="colon">:</span><span id="mm">00</span>
   </div>
@@ -98,85 +99,80 @@ html, body {
 </div>
 
 <div id="controls">
-  <button class="control-btn" id="moveL">&#x25C0;</button>
-  <button class="control-btn" id="moveR">&#x25B6;</button>
-  <button class="control-btn" id="rotateBtn">&#x27F3;</button>
-  <button class="control-btn" id="zoomIn">&#x2795;</button>
-  <button class="control-btn" id="zoomOut">&#x2796;</button>
-  <button class="control-btn" id="fontBtn">&#x1D468;</button> <button class="control-btn color-btn" id="colorBtn">&#x1F3A8;</button>
-  <button class="control-btn" id="fsBtn">&#x26F6;</button>
+  <button class="control-btn" id="moveL">&#x25C0</button>
+  <button class="control-btn" id="moveR">&#x25B6</button>
+  <button class="control-btn" id="rotateBtn">&#x21BB</button>
+  <button class="control-btn" id="battBtn"><b>B</b></button> <button class="control-btn" id="zoomIn">&#x2795</button>
+  <button class="control-btn" id="zoomOut">&#x2796</button>
+  <button class="control-btn" id="fontBtn"><b>F</b></button>
+  <button class="control-btn color-btn" id="colorBtn">&#x1F3A8</button>
+  <button class="control-btn" id="fsBtn">[ ]</button>
 </div>
 
 <script>
 var wrap = document.getElementById("wrap");
+var batteryBox = document.getElementById("battery-box");
+var battEl = document.getElementById("battery");
 var hh = document.getElementById("hh");
 var mm = document.getElementById("mm");
 var colon = document.getElementById("colon");
 var dateEl = document.getElementById("date");
-var batteryEl = document.getElementById("battery");
 var controls = document.getElementById("controls");
 
-var fonts = [
-  "'Anton', sans-serif", "'Bebas Neue', sans-serif", "'Oswald', sans-serif", 
-  "'League Spartan', sans-serif", "'Teko', sans-serif", "'Archivo Black', sans-serif", 
-  "'Barlow Condensed', sans-serif", "'Yantramanav', sans-serif", "'Saira Condensed', sans-serif", 
-  "'Exo 2', sans-serif", "'Righteous', cursive", "'Orbitron', sans-serif", 
-  "'Lobster', cursive", "'Abril Fatface', serif", "'Kanit', sans-serif", 
-  "'Saira Extra Condensed', sans-serif", "'Big Shoulders Display', sans-serif", 
-  "'Share Tech Mono', monospace", "'VT323', monospace", "'Wallpoet', cursive"
-];
-
+var fonts = ["'Anton', sans-serif", "'Bebas Neue', sans-serif", "'Oswald', sans-serif", "'League Spartan', sans-serif", "'Teko', sans-serif", "'Archivo Black', sans-serif", "'Barlow Condensed', sans-serif", "'Yantramanav', sans-serif", "'Saira Condensed', sans-serif", "'Exo 2', sans-serif", "'Righteous', cursive", "'Orbitron', sans-serif", "'Lobster', cursive", "'Abril Fatface', serif", "'Kanit', sans-serif", "'Saira Extra Condensed', sans-serif", "'Big Shoulders Display', sans-serif", "'Share Tech Mono', monospace", "'VT323', monospace", "'Wallpoet', cursive"];
 var colors = ["#ffffff", "#ff3b3b", "#ff9800", "#ffeb3b", "#4caf50", "#00e5ff", "#2196f3", "#9c27b0"];
 var days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
 var months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 
+// Settings Loading
 var zoom = parseFloat(localStorage.getItem("jio_zoom")) || 1.0;
 var fontIdx = parseInt(localStorage.getItem("jio_font")) || 0;
 var colorIdx = parseInt(localStorage.getItem("jio_color")) || 0;
+var battPosIdx = parseInt(localStorage.getItem("jio_batt")) || 1; // Load Battery Pos
 var isRotated = false;
 var showColon = true;
 var moveVal = 0;
-
-// Battery Function
-function updateBattery() {
-    if (navigator.getBattery) {
-        navigator.getBattery().then(function(battery) {
-            batteryEl.innerHTML = Math.round(battery.level * 100) + "%";
-            battery.onlevelchange = function() {
-                batteryEl.innerHTML = Math.round(this.level * 100) + "%";
-            };
-        });
-    }
-}
-
-function activateWakeLock() {
-    if (navigator.requestWakeLock) navigator.requestWakeLock('screen');
-    if (navigator.keepWakeLock) navigator.keepWakeLock(true);
-    if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(function(e){});
-}
-activateWakeLock();
-
-function updateClock() {
-    var d = new Date();
-    var h = d.getHours() % 12 || 12;
-    var m = d.getMinutes();
-    hh.innerHTML = (h < 10 ? "0" + h : h);
-    mm.innerHTML = (m < 10 ? "0" + m : m);
-    colon.style.visibility = showColon ? "visible" : "hidden";
-    showColon = !showColon;
-    dateEl.innerHTML = days[d.getDay()] + ", " + (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + " - " + months[d.getMonth()];
-}
+var battAlignments = ["flex-start", "center", "flex-end"];
 
 function saveSettings() {
     localStorage.setItem("jio_zoom", zoom);
     localStorage.setItem("jio_font", fontIdx);
     localStorage.setItem("jio_color", colorIdx);
+    localStorage.setItem("jio_batt", battPosIdx); // Save Battery Pos
+}
+
+function cycleBatteryPos() {
+    battPosIdx = (battPosIdx + 1) % 3;
+    batteryBox.style.justifyContent = battAlignments[battPosIdx];
+    saveSettings();
+    resetTimer();
+}
+
+function updateBattery() {
+    if (navigator.getBattery) {
+        navigator.getBattery().then(function(battery) {
+            function update() { battEl.innerHTML = Math.round(battery.level * 100) + "%"; }
+            update();
+            battery.addEventListener('levelchange', update);
+        });
+    }
+}
+
+function updateClock() {
+    var d = new Date();
+    var h = d.getHours() % 12 || 12;
+    var m = d.getMinutes();
+    if(hh) hh.innerHTML = (h < 10 ? "0" + h : h);
+    if(mm) mm.innerHTML = (m < 10 ? "0" + m : m);
+    if(colon) { colon.style.visibility = showColon ? "visible" : "hidden"; showColon = !showColon; }
+    if(dateEl) dateEl.innerHTML = days[d.getDay()] + ", " + (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + " - " + months[d.getMonth()];
 }
 
 function applyStyles() {
     document.documentElement.style.setProperty('--zoom', zoom);
     document.documentElement.style.setProperty('--clock-font', fonts[fontIdx]);
     document.body.style.color = colors[colorIdx];
+    batteryBox.style.justifyContent = battAlignments[battPosIdx]; // Apply loaded battery pos
 }
 
 function applyPos() {
@@ -191,45 +187,36 @@ function resetTimer() {
     uiTimer = setTimeout(function() { controls.className = "hide-ui"; }, 3000);
 }
 
-function moveLeft() { moveVal -= 15; applyPos(); }
-function moveRight() { moveVal += 15; applyPos(); }
 function toggleRotate() { 
-    isRotated = !isRotated; 
-    wrap.className = isRotated ? "rotated" : ""; 
-    moveVal = 0; applyPos(); 
-    setTimeout(updateSize, 300); 
-}
-function colorNext() { colorIdx = (colorIdx + 1) % colors.length; saveSettings(); applyStyles(); resetTimer(); }
-function zoomIn() { zoom += 0.05; saveSettings(); applyStyles(); resetTimer(); }
-function zoomOut() { zoom -= 0.05; saveSettings(); applyStyles(); resetTimer(); }
-function fontNext() { fontIdx = (fontIdx + 1) % fonts.length; saveSettings(); applyStyles(); resetTimer(); }
-function toggleFS() { 
-    var el = document.documentElement; 
-    var rfs = el.requestFullscreen || el.mozRequestFullScreen || el.webkitRequestFullscreen;
-    if (rfs) rfs.call(el); 
-    resetTimer(); 
+    isRotated = !isRotated; wrap.className = isRotated ? "rotated" : ""; 
+    moveVal = 0; applyPos(); setTimeout(updateSize, 300); 
 }
 
-document.getElementById("moveL").onclick = moveLeft;
-document.getElementById("moveR").onclick = moveRight;
-document.getElementById("rotateBtn").onclick = toggleRotate;
-document.getElementById("colorBtn").onclick = colorNext;
-document.getElementById("zoomIn").onclick = zoomIn;
-document.getElementById("zoomOut").onclick = zoomOut;
-document.getElementById("fontBtn").onclick = fontNext;
-document.getElementById("fsBtn").onclick = toggleFS;
+// Event Listeners
+document.getElementById("moveL").onclick = function(e) { e.stopPropagation(); moveVal -= 15; applyPos(); };
+document.getElementById("moveR").onclick = function(e) { e.stopPropagation(); moveVal += 15; applyPos(); };
+document.getElementById("rotateBtn").onclick = function(e) { e.stopPropagation(); toggleRotate(); };
+document.getElementById("battBtn").onclick = function(e) { e.stopPropagation(); cycleBatteryPos(); };
+document.getElementById("colorBtn").onclick = function(e) { e.stopPropagation(); colorIdx = (colorIdx + 1) % colors.length; saveSettings(); applyStyles(); resetTimer(); };
+document.getElementById("zoomIn").onclick = function(e) { e.stopPropagation(); zoom += 0.05; saveSettings(); applyStyles(); resetTimer(); };
+document.getElementById("zoomOut").onclick = function(e) { e.stopPropagation(); zoom -= 0.05; saveSettings(); applyStyles(); resetTimer(); };
+document.getElementById("fontBtn").onclick = function(e) { e.stopPropagation(); fontIdx = (fontIdx + 1) % fonts.length; saveSettings(); applyStyles(); resetTimer(); };
+document.getElementById("fsBtn").onclick = function(e) { e.stopPropagation(); var el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen(); resetTimer(); };
+
+document.addEventListener('click', resetTimer);
+document.addEventListener('touchstart', resetTimer);
 
 document.addEventListener('keydown', function(e) {
     switch(e.key) {
-        case '4': moveLeft(); break;
-        case '6': moveRight(); break;
+        case '4': moveVal -= 15; applyPos(); break;
+        case '6': moveVal += 15; applyPos(); break;
         case '5': toggleRotate(); break;
-        case '7': zoomIn(); break;
-        case '9': zoomOut(); break;
-        case '8': fontNext(); break;
-        case '0': colorNext(); break;
-        case '#': toggleFS(); break;
-        case '*': moveVal = 0; applyPos(); break; 
+        case '7': zoom += 0.05; saveSettings(); applyStyles(); break;
+        case '9': zoom -= 0.05; saveSettings(); applyStyles(); break;
+        case '8': fontIdx = (fontIdx + 1) % fonts.length; saveSettings(); applyStyles(); break;
+        case '0': colorIdx = (colorIdx + 1) % colors.length; saveSettings(); applyStyles(); break;
+        case '*': cycleBatteryPos(); break; 
+        case '#': var el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen(); break;
     }
     resetTimer();
 });
@@ -239,14 +226,11 @@ function updateSize() {
     document.documentElement.style.setProperty('--clock-size', (base * 0.35) + "px");
 }
 
-document.onclick = resetTimer;
-document.ontouchstart = resetTimer;
-
 setInterval(updateClock, 1000);
 updateClock();
+updateBattery();
 applyStyles();
 updateSize();
-updateBattery();
 resetTimer(); 
 window.onresize = updateSize;
 </script>
