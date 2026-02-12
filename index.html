@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ultimate Jio Clock - Pro Edition</title>
+
+<style>
+/* ===== ALL 54 LOCAL FONTS ===== */
+
+@font-face { font-family: 'Anton'; src: url('fonts/Anton-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'ArchivoBlack'; src: url('fonts/ArchivoBlack-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'BarlowCondensedBold'; src: url('fonts/BarlowCondensed-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'BarlowCondensedBoldItalic'; src: url('fonts/BarlowCondensed-BoldItalic.woff2') format('woff2'); }
+@font-face { font-family: 'BebasNeue'; src: url('fonts/BebasNeue-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'BigShouldersBold'; src: url('fonts/BigShoulders_18pt-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'BigShouldersMedium'; src: url('fonts/BigShoulders_18pt-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'BungeeInline'; src: url('fonts/BungeeInline-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Digital7'; src: url('fonts/digital-7.woff2') format('woff2'); }
+@font-face { font-family: 'Digital7Italic'; src: url('fonts/digital-7 (italic).woff2') format('woff2'); }
+@font-face { font-family: 'DSDIGI'; src: url('fonts/DS-DIGI.woff2') format('woff2'); }
+@font-face { font-family: 'DSDIGIB'; src: url('fonts/DS-DIGIB.woff2') format('woff2'); }
+@font-face { font-family: 'DSDIGII'; src: url('fonts/DS-DIGII.woff2') format('woff2'); }
+@font-face { font-family: 'DSDIGIT'; src: url('fonts/DS-DIGIT.woff2') format('woff2'); }
+@font-face { font-family: 'Ewert'; src: url('fonts/Ewert-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Exo2Bold'; src: url('fonts/Exo2-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'Exo2BoldItalic'; src: url('fonts/Exo2-BoldItalic.woff2') format('woff2'); }
+@font-face { font-family: 'Exo2ExtraBold'; src: url('fonts/Exo2-ExtraBold.woff2') format('woff2'); }
+@font-face { font-family: 'Exo2ExtraBoldItalic'; src: url('fonts/Exo2-ExtraBoldItalic.woff2') format('woff2'); }
+@font-face { font-family: 'FugazOne'; src: url('fonts/FugazOne-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Graduate'; src: url('fonts/Graduate-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Iceberg'; src: url('fonts/Iceberg-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'KanitExtraBold'; src: url('fonts/Kanit-ExtraBold.woff2') format('woff2'); }
+@font-face { font-family: 'KanitExtraBoldItalic'; src: url('fonts/Kanit-ExtraBoldItalic.woff2') format('woff2'); }
+@font-face { font-family: 'KanitMedium'; src: url('fonts/Kanit-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'KanitMediumItalic'; src: url('fonts/Kanit-MediumItalic.woff2') format('woff2'); }
+@font-face { font-family: 'LeagueSpartanBold'; src: url('fonts/LeagueSpartan-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'LeagueSpartanMedium'; src: url('fonts/LeagueSpartan-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Lobster'; src: url('fonts/Lobster-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'MeriendaBold'; src: url('fonts/Merienda-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'MeriendaExtraBold'; src: url('fonts/Merienda-ExtraBold.woff2') format('woff2'); }
+@font-face { font-family: 'OrbitronBold'; src: url('fonts/Orbitron-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'OswaldBold'; src: url('fonts/Oswald-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'OswaldMedium'; src: url('fonts/Oswald-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'RacingSansOne'; src: url('fonts/RacingSansOne-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Righteous'; src: url('fonts/Righteous-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'SairaCondensedBlack'; src: url('fonts/SairaCondensed-Black.woff2') format('woff2'); }
+@font-face { font-family: 'SairaCondensedBold'; src: url('fonts/SairaCondensed-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'SairaExtraCondensedBlack'; src: url('fonts/SairaExtraCondensed-Black.woff2') format('woff2'); }
+@font-face { font-family: 'SairaExtraCondensedBold'; src: url('fonts/SairaExtraCondensed-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'SairaExtraCondensedMedium'; src: url('fonts/SairaExtraCondensed-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'SairaStencilOne'; src: url('fonts/SairaStencilOne-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'ShareTechMono'; src: url('fonts/ShareTechMono-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Technology'; src: url('fonts/Technology.woff2') format('woff2'); }
+@font-face { font-family: 'TechnologyBold'; src: url('fonts/Technology-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'TechnologyItalic'; src: url('fonts/Technology-Italic.woff2') format('woff2'); }
+@font-face { font-family: 'TechnologyBoldItalic'; src: url('fonts/Technology-BoldItalic.woff2') format('woff2'); }
+@font-face { font-family: 'TekoRegular'; src: url('fonts/Teko-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'TekoMedium'; src: url('fonts/Teko-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'TekoBold'; src: url('fonts/Teko-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'VastShadow'; src: url('fonts/VastShadow-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'VT323'; src: url('fonts/VT323-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'YantramanavBold'; src: url('fonts/Yantramanav-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'YantramanavMedium'; src: url('fonts/Yantramanav-Medium.woff2') format('woff2'); }
+
+:root {
+    --clock-size: 240px;
+    --zoom: 1;
+    --move-x: 0px;
+    --move-y: 0px;
+    --clock-font: 'Anton', sans-serif;
+}
+
+html, body {
+    margin: 0; padding: 0;
+    height: 100%; width: 100%;
+    background: black; color: white;
+    overflow: hidden; position: fixed;
+    transition: background 0.6s ease, color 0.4s ease;
+}
+
+#bg-clicker {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1;
+}
+
+#pos-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(calc(-50% + var(--move-x)), calc(-50% + var(--move-y)));
+    transition: transform 0.2s ease-out;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#wrap {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; transition: transform 0.3s ease;
+}
+
+#wrap.rotated-left { transform: rotate(-90deg); }
+#wrap.rotated-right { transform: rotate(90deg); }
+
+#clock { font-size: calc(var(--clock-size) * var(--zoom)); line-height: 1; font-family: var(--clock-font); white-space: nowrap; }
+#date { margin-top: 5px; font-size: calc(var(--clock-size) * var(--zoom) * 0.35); opacity: 1; font-family: var(--clock-font); white-space: nowrap; text-transform: uppercase; }
+
+#controls {
+    position: fixed; bottom: 8px; right: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
+
+.control-btn {
+    width: 38px; height: 38px; font-size: 11px; font-weight: bold;
+    background: rgba(128,128,128,0.25); color: white;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 8px;
+    cursor: pointer; backdrop-filter: blur(4px);
+}
+
+.hide-ui { opacity: 0 !important; pointer-events: none !important; }
+.color-btn { background: linear-gradient(135deg, red, blue); }
+.bg-btn { background: linear-gradient(135deg, #fff, #444, #000); color: #00ff00; border: 1px solid #fff; }
+</style>
+</head>
+
+<body>
+
+<div id="bg-clicker"></div>
+
+<div id="pos-container">
+    <div id="wrap">
+      <div id="clock"><span id="hh">00</span><span id="colon">:</span><span id="mm">00</span></div>
+      <div id="date">--</div>
+    </div>
+</div>
+
+<div id="controls">
+  <div style="display: flex; gap: 4px; justify-content: center;">
+    <button class="control-btn" id="moveU">&#x25B2;</button>
+  </div>
+  <div style="display: flex; gap: 4px;">
+    <button class="control-btn" id="moveL">&#x25C0;</button>
+    <button class="control-btn" id="rotateBtn">&#x21BB;</button>
+    <button class="control-btn" id="moveR">&#x25B6;</button>
+  </div>
+  <div style="display: flex; gap: 4px; justify-content: center;">
+    <button class="control-btn" id="moveD">&#x25BC;</button>
+  </div>
+  <div style="display: flex; gap: 4px; justify-content: center;">
+    <button class="control-btn" id="zoomOut">&#x2796;</button>
+    <button class="control-btn" id="zoomIn">&#x2795;</button>
+  </div>
+  <div style="display: flex; gap: 4px; justify-content: center;">
+    <button class="control-btn" id="fontPrevBtn">F-</button>
+    <button class="control-btn" id="fontNextBtn">F+</button>
+  </div>
+  <div style="display: flex; gap: 4px; justify-content: center;">
+    <button class="control-btn color-btn" id="colorBtn">T</button>
+    <button class="control-btn bg-btn" id="bgColorBtn">BG</button>
+  </div>
+  <div style="display: flex; gap: 4px; justify-content: center;">
+    <button class="control-btn" id="fsBtn">[ ]</button>
+  </div>
+</div>
+
+<script>
+var controls = document.getElementById("controls");
+var wrap = document.getElementById("wrap");
+var hh = document.getElementById("hh"), mm = document.getElementById("mm"), colon = document.getElementById("colon"), dateEl = document.getElementById("date");
+
+var fonts = [
+  "Anton",
+  "ArchivoBlack",
+  "BarlowCondensedBold",
+  "BarlowCondensedBoldItalic",
+  "BebasNeue",
+  "BigShouldersBold",
+  "BigShouldersMedium",
+  "BungeeInline",
+  "Digital7",
+  "Digital7Italic",
+  "DSDIGI",
+  "DSDIGIB",
+  "DSDIGII",
+  "DSDIGIT",
+  "Ewert",
+  "Exo2Bold",
+  "Exo2BoldItalic",
+  "Exo2ExtraBold",
+  "Exo2ExtraBoldItalic",
+  "FugazOne",
+  "Graduate",
+  "Iceberg",
+  "KanitExtraBold",
+  "KanitExtraBoldItalic",
+  "KanitMedium",
+  "KanitMediumItalic",
+  "LeagueSpartanBold",
+  "LeagueSpartanMedium",
+  "Lobster",
+  "MeriendaBold",
+  "MeriendaExtraBold",
+  "OrbitronBold",
+  "OswaldBold",
+  "OswaldMedium",
+  "RacingSansOne",
+  "Righteous",
+  "SairaCondensedBlack",
+  "SairaCondensedBold",
+  "SairaExtraCondensedBlack",
+  "SairaExtraCondensedBold",
+  "SairaExtraCondensedMedium",
+  "SairaStencilOne",
+  "ShareTechMono",
+  "Technology",
+  "TechnologyBold",
+  "TechnologyItalic",
+  "TechnologyBoldItalic",
+  "TekoRegular",
+  "TekoMedium",
+  "TekoBold",
+  "VastShadow",
+  "VT323",
+  "YantramanavBold",
+  "YantramanavMedium"
+];
+
+var colors = [
+   
+	"#ffffff", // White
+    
+	"#000000", // Black
+    
+	"#1A1A1A", // Matte Black (New)
+    
+	"#333333", // Charcoal Grey (New)
+    
+	"#535C68", // Gunmetal (New)
+    
+	"#696969", // Dimgray (New)
+    
+	"#B2BEC3", // Silver Ash (New)
+    
+	"#ff3b3b", // Red
+    
+	"#ff9800", // Orange
+    
+	"#ffeb3b", // Yellow
+    
+	"#4caf50", // Green
+    
+	"#00e5ff", // Cyan
+    
+	"#2196f3", // Blue
+    
+	"#9c27b0", // Purple
+    
+	"#ff00ff", // Magenta
+    
+	"#CCFF00", // Neon
+    
+	"#00FF41", // Matrix Green
+   
+	"#A5F2F3", // Pastel Blue
+    
+	"#BF00FF", // Electric Purple
+    
+	"#FF10F0"  // Hot Pink
+	
+];
+
+// Yahan saare purane aur naye colors merge hain
+var bgColors = [
+    // --- DARK SHADES ---
+    "#000000", "#0a0a0a", "#111111", "#181818", "#222222", 
+    "#001f3f", "#1b0333", "#002b36", "#2d0a31", "#111", "#333",
+    
+    // --- WHITE & GREY SHADES ---
+    "#ffffff", "#f2f2f2", "#e0e0e0", "#cccccc", "#a9a9a9", "#808080", "#dcdcdc", "#f5f5f5",
+    
+    // --- VIBRANT & PASTELS (Purane Colors) ---
+    "#dc143c", "#2196f3", "#4caf50", "#ff9800", "#673ab7", "#330000", "#003300", "#000033"
+];
+
+var days = ["SUN","MON","TUE","WED","THU","FRI","SAT"], months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+// Settings Load
+var zoom = parseFloat(localStorage.getItem("jio_zoom")) || 1.0;
+var fontIdx = parseInt(localStorage.getItem("jio_font")) || 0;
+var colorIdx = parseInt(localStorage.getItem("jio_color")) || 0;
+var bgIdx = parseInt(localStorage.getItem("jio_bg")) || 0;
+var rotateMode = parseInt(localStorage.getItem("jio_rotate")) || 0;
+var moveX = parseInt(localStorage.getItem("jio_moveX")) || 0;
+var moveY = parseInt(localStorage.getItem("jio_moveY")) || 0;
+var showColon = true;
+
+// Full Wake Lock support (KaiOS + Modern Browsers)
+function activateWakeLock() {
+    if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').catch(()=>{});
+    }
+    if (navigator.requestWakeLock) navigator.requestWakeLock('screen');
+    if (navigator.keepWakeLock) navigator.keepWakeLock(true);
+}
+
+function updateClock() {
+    var d = new Date();
+    var h = d.getHours() % 12 || 12, m = d.getMinutes();
+    hh.innerHTML = (h < 10 ? "0" + h : h);
+    mm.innerHTML = (m < 10 ? "0" + m : m);
+    colon.style.visibility = showColon ? "visible" : "hidden";
+    showColon = !showColon;
+    dateEl.innerHTML = days[d.getDay()] + ", " + (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + " " + months[d.getMonth()];
+}
+
+function resetTimer() {
+    controls.classList.remove("hide-ui");
+    clearTimeout(window.uiTimer);
+    window.uiTimer = setTimeout(() => controls.classList.add("hide-ui"), 4000); 
+}
+
+function saveSettings() {
+    localStorage.setItem("jio_zoom", zoom);
+    localStorage.setItem("jio_font", fontIdx);
+    localStorage.setItem("jio_color", colorIdx);
+    localStorage.setItem("jio_bg", bgIdx);
+    localStorage.setItem("jio_rotate", rotateMode);
+    localStorage.setItem("jio_moveX", moveX);
+    localStorage.setItem("jio_moveY", moveY);
+}
+
+function applyAll() {
+    document.documentElement.style.setProperty('--move-x', moveX + "px");
+    document.documentElement.style.setProperty('--move-y', moveY + "px");
+    document.documentElement.style.setProperty('--zoom', zoom);
+    document.documentElement.style.setProperty('--clock-font', fonts[fontIdx]);
+    document.body.style.color = colors[colorIdx];
+    document.body.style.backgroundColor = bgColors[bgIdx];
+    
+    if (rotateMode === 0) wrap.className = "";
+    else if (rotateMode === 1) wrap.className = "rotated-left";
+    else if (rotateMode === 2) wrap.className = "rotated-right";
+}
+
+function move(dir) {
+    var step = 20;
+    if (dir === 'U') moveY -= step; if (dir === 'D') moveY += step;
+    if (dir === 'L') moveX -= step; if (dir === 'R') moveX += step;
+    applyAll(); saveSettings(); resetTimer();
+}
+
+document.getElementById("bg-clicker").onclick = () => { resetTimer(); activateWakeLock(); };
+document.getElementById("moveU").onclick = (e) => { e.stopPropagation(); move('U'); };
+document.getElementById("moveD").onclick = (e) => { e.stopPropagation(); move('D'); };
+document.getElementById("moveL").onclick = (e) => { e.stopPropagation(); move('L'); };
+document.getElementById("moveR").onclick = (e) => { e.stopPropagation(); move('R'); };
+document.getElementById("rotateBtn").onclick = (e) => { e.stopPropagation(); rotateMode = (rotateMode + 1) % 3; applyAll(); updateSize(); saveSettings(); resetTimer(); };
+document.getElementById("zoomIn").onclick = (e) => { e.stopPropagation(); zoom += 0.05; applyAll(); saveSettings(); resetTimer(); };
+document.getElementById("zoomOut").onclick = (e) => { e.stopPropagation(); zoom -= 0.05; applyAll(); saveSettings(); resetTimer(); };
+document.getElementById("fontNextBtn").onclick = (e) => { e.stopPropagation(); fontIdx = (fontIdx + 1) % fonts.length; applyAll(); saveSettings(); resetTimer(); };
+document.getElementById("fontPrevBtn").onclick = (e) => { e.stopPropagation(); fontIdx = (fontIdx - 1 + fonts.length) % fonts.length; applyAll(); saveSettings(); resetTimer(); };
+document.getElementById("colorBtn").onclick = (e) => { e.stopPropagation(); colorIdx = (colorIdx + 1) % colors.length; applyAll(); saveSettings(); resetTimer(); };
+document.getElementById("bgColorBtn").onclick = (e) => { e.stopPropagation(); bgIdx = (bgIdx + 1) % bgColors.length; applyAll(); saveSettings(); resetTimer(); };
+
+document.getElementById("fsBtn").onclick = (e) => {
+    e.stopPropagation();
+    var d = document, el = d.documentElement;
+    if (!(d.fullscreenElement || d.webkitFullscreenElement)) {
+        if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    } else {
+        if (d.exitFullscreen) d.exitFullscreen(); else if (d.webkitExitFullscreen) d.webkitExitFullscreen();
+    }
+    resetTimer();
+};
+
+function updateSize() {
+    var isRotated = rotateMode !== 0;
+    var base = isRotated ? Math.min(window.innerWidth, window.innerHeight) * 1.5 : Math.min(window.innerWidth, window.innerHeight);
+    document.documentElement.style.setProperty('--clock-size', (base * 0.35) + "px");
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+window.onresize = updateSize;
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') activateWakeLock(); });
+applyAll(); 
+updateSize(); 
+resetTimer();
+activateWakeLock();
+</script>
+</body>
+</html>
