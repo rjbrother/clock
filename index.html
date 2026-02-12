@@ -226,66 +226,11 @@ var fonts = [
   "YantramanavMedium"
 ];
 
-var colors = [
-   
-	"#ffffff", // White
-    
-	"#000000", // Black
-    
-	"#1A1A1A", // Matte Black (New)
-    
-	"#333333", // Charcoal Grey (New)
-    
-	"#535C68", // Gunmetal (New)
-    
-	"#696969", // Dimgray (New)
-    
-	"#B2BEC3", // Silver Ash (New)
-    
-	"#ff3b3b", // Red
-    
-	"#ff9800", // Orange
-    
-	"#ffeb3b", // Yellow
-    
-	"#4caf50", // Green
-    
-	"#00e5ff", // Cyan
-    
-	"#2196f3", // Blue
-    
-	"#9c27b0", // Purple
-    
-	"#ff00ff", // Magenta
-    
-	"#CCFF00", // Neon
-    
-	"#00FF41", // Matrix Green
-   
-	"#A5F2F3", // Pastel Blue
-    
-	"#BF00FF", // Electric Purple
-    
-	"#FF10F0"  // Hot Pink
-	
-];
-
-// Yahan saare purane aur naye colors merge hain
-var bgColors = [
-    // --- DARK SHADES ---
-    "#000000", "#0a0a0a", "#111111", "#181818", "#222222", 
-    "#001f3f", "#1b0333", "#002b36", "#2d0a31", "#111", "#333",
-    
-    // --- WHITE & GREY SHADES ---
-    "#ffffff", "#f2f2f2", "#e0e0e0", "#cccccc", "#a9a9a9", "#808080", "#dcdcdc", "#f5f5f5",
-    
-    // --- VIBRANT & PASTELS (Purane Colors) ---
-    "#dc143c", "#2196f3", "#4caf50", "#ff9800", "#673ab7", "#330000", "#003300", "#000033"
-];
+var colors = ["#ffffff", "#000000", "#1A1A1A", "#333333", "#535C68", "#696969", "#B2BEC3", "#ff3b3b", "#ff9800", "#ffeb3b", "#4caf50", "#00e5ff", "#2196f3", "#9c27b0", "#ff00ff", "#CCFF00", "#00FF41", "#A5F2F3", "#BF00FF", "#FF10F0"];
+var bgColors = ["#000000", "#0a0a0a", "#111111", "#181818", "#222222", "#001f3f", "#1b0333", "#002b36", "#2d0a31", "#111", "#333", "#ffffff", "#f2f2f2", "#e0e0e0", "#cccccc", "#a9a9a9", "#808080", "#dcdcdc", "#f5f5f5", "#dc143c", "#2196f3", "#4caf50", "#ff9800", "#673ab7", "#330000", "#003300", "#000033"];
 
 var days = ["SUN","MON","TUE","WED","THU","FRI","SAT"], months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 
-// Settings Load
 var zoom = parseFloat(localStorage.getItem("jio_zoom")) || 1.0;
 var fontIdx = parseInt(localStorage.getItem("jio_font")) || 0;
 var colorIdx = parseInt(localStorage.getItem("jio_color")) || 0;
@@ -337,7 +282,6 @@ function applyAll() {
     document.documentElement.style.setProperty('--clock-font', fonts[fontIdx]);
     document.body.style.color = colors[colorIdx];
     document.body.style.backgroundColor = bgColors[bgIdx];
-    
     if (rotateMode === 0) wrap.className = "";
     else if (rotateMode === 1) wrap.className = "rotated-left";
     else if (rotateMode === 2) wrap.className = "rotated-right";
@@ -349,6 +293,65 @@ function move(dir) {
     if (dir === 'L') moveX -= step; if (dir === 'R') moveX += step;
     applyAll(); saveSettings(); resetTimer();
 }
+
+// PHYSICAL BUTTONS HANDLER (Optimized for JioPhone/KaiOS)
+window.addEventListener('keydown', function(e) {
+    resetTimer();
+    // KaiOS/JioPhone keys support
+    var key = e.key || e.keyIdentifier || e.keyCode;
+
+    switch(key) {
+        case 'ArrowUp': 
+        case 'Up': move('U'); break;
+        
+        case 'ArrowDown': 
+        case 'Down': move('D'); break;
+        
+        case 'ArrowLeft': 
+        case 'Left': move('L'); break;
+        
+        case 'ArrowRight': 
+        case 'Right': move('R'); break;
+        
+        case 'Enter': 
+        case 'Accept': 
+        case 'Select':
+            rotateMode = (rotateMode + 1) % 3; 
+            applyAll(); 
+            updateSize(); 
+            saveSettings(); 
+            break;
+            
+        case '1': zoom -= 0.05; applyAll(); saveSettings(); break;
+        case '3': zoom += 0.05; applyAll(); saveSettings(); break;
+        case '4': fontIdx = (fontIdx - 1 + fonts.length) % fonts.length; applyAll(); saveSettings(); break;
+        case '6': fontIdx = (fontIdx + 1) % fonts.length; applyAll(); saveSettings(); break;
+        case '7': colorIdx = (colorIdx + 1) % colors.length; applyAll(); saveSettings(); break;
+        case '9': bgIdx = (bgIdx + 1) % bgColors.length; applyAll(); saveSettings(); break;
+        case '5': resetTimer(); break;
+        case 'Call': /* Optional: Call button for something */ break;
+        case '#': toggleFS(); break;
+        case '*': /* Aap '*' button ko bhi kisi kaam ke liye use kar sakte hain */ break;
+    }
+});
+
+function toggleFS() {
+    var d = document, el = d.documentElement;
+    try {
+        if (!(d.fullscreenElement || d.webkitFullscreenElement)) {
+            if (el.requestFullscreen) el.requestFullscreen().catch(()=>{}); 
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        } else {
+            if (d.exitFullscreen) d.exitFullscreen().catch(()=>{}); 
+            else if (d.webkitExitFullscreen) d.webkitExitFullscreen();
+        }
+    } catch(err) {
+        console.log("Fullscreen not supported");
+    }
+    resetTimer();
+}
+
+
 
 document.getElementById("bg-clicker").onclick = () => { resetTimer(); activateWakeLock(); };
 document.getElementById("moveU").onclick = (e) => { e.stopPropagation(); move('U'); };
@@ -362,17 +365,7 @@ document.getElementById("fontNextBtn").onclick = (e) => { e.stopPropagation(); f
 document.getElementById("fontPrevBtn").onclick = (e) => { e.stopPropagation(); fontIdx = (fontIdx - 1 + fonts.length) % fonts.length; applyAll(); saveSettings(); resetTimer(); };
 document.getElementById("colorBtn").onclick = (e) => { e.stopPropagation(); colorIdx = (colorIdx + 1) % colors.length; applyAll(); saveSettings(); resetTimer(); };
 document.getElementById("bgColorBtn").onclick = (e) => { e.stopPropagation(); bgIdx = (bgIdx + 1) % bgColors.length; applyAll(); saveSettings(); resetTimer(); };
-
-document.getElementById("fsBtn").onclick = (e) => {
-    e.stopPropagation();
-    var d = document, el = d.documentElement;
-    if (!(d.fullscreenElement || d.webkitFullscreenElement)) {
-        if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    } else {
-        if (d.exitFullscreen) d.exitFullscreen(); else if (d.webkitExitFullscreen) d.webkitExitFullscreen();
-    }
-    resetTimer();
-};
+document.getElementById("fsBtn").onclick = (e) => { e.stopPropagation(); toggleFS(); };
 
 function updateSize() {
     var isRotated = rotateMode !== 0;
@@ -384,10 +377,7 @@ updateClock();
 setInterval(updateClock, 1000);
 window.onresize = updateSize;
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') activateWakeLock(); });
-applyAll(); 
-updateSize(); 
-resetTimer();
-activateWakeLock();
+applyAll(); updateSize(); resetTimer(); activateWakeLock();
 </script>
 </body>
 </html>
