@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ultimate Smart Clock - Jio Edition Pro</title>
+
+<style>
+/* ===== ALL 54 LOCAL FONTS ===== */
+@font-face { font-family: 'Anton'; src: url('fonts/Anton-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'ArchivoBlack'; src: url('fonts/ArchivoBlack-Regular.woff2') format('woff2'); }
+
+:root {
+    --clock-size: 240px;
+    --move-x: 0px;
+    --move-y: 0px;
+    --clock-font: 'Anton', sans-serif;
+    --date-offset: 0px;
+    --date-scale: 0.35;
+    --clock-gap: 0px;
+}
+
+html, body {
+    margin: 0; padding: 0;
+    height: 100%; width: 100%;
+    background: black; color: white;
+    overflow: hidden; position: fixed;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#pos-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    -webkit-transform: translate(calc(-50% + var(--move-x)), calc(-50% + var(--move-y)));
+    transform: translate(calc(-50% + var(--move-x)), calc(-50% + var(--move-y)));
+    z-index: 2;
+    pointer-events: none;
+}
+
+#wrap {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-orient: vertical; -webkit-flex-direction: column; flex-direction: column;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center;
+    text-align: center;
+}
+
+#wrap.rotated-left { -webkit-transform: rotate(-90deg); transform: rotate(-90deg); }
+#wrap.rotated-right { -webkit-transform: rotate(90deg); transform: rotate(90deg); }
+
+#clock { 
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center;
+    font-size: var(--clock-size); 
+    line-height: 0.9; 
+    font-family: var(--clock-font); 
+    white-space: nowrap; 
+}
+
+#clock.vertical { 
+    -webkit-box-orient: vertical; -webkit-flex-direction: column; flex-direction: column; 
+    line-height: 0.8; 
+    gap: var(--clock-gap);
+}
+#clock.vertical #colon { display: none; }
+
+#date {
+    font-size: calc(var(--clock-size) * var(--date-scale));
+    font-family: var(--clock-font);
+    white-space: nowrap;
+    text-transform: uppercase;
+    -webkit-transform: translateY(var(--date-offset));
+    transform: translateY(var(--date-offset));
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center;
+}
+
+#bat-container {
+    display: -webkit-inline-flex; display: inline-flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    position: relative;
+    width: 2em; height: 1em; 
+    border: 0.08em solid currentColor;
+    border-radius: 0.15em;
+    margin-left: 0.2em; padding: 0.05em;
+    box-sizing: border-box; vertical-align: middle;
+}
+
+#bat-container::after {
+    content: ''; position: absolute; right: -0.25em; top: 50%;
+    -webkit-transform: translateY(-50%); transform: translateY(-50%);
+    width: 0.18em; height: 0.45em;
+    background: currentColor; border-radius: 0 0.1em 0.1em 0;
+}
+
+#bat-fill {
+    position: absolute; left: 0.05em; top: 0.05em; bottom: 0.05em;
+    background: currentColor; opacity: 0.4;
+    -webkit-transition: width 0.5s ease; transition: width 0.5s ease;
+    z-index: 1;
+}
+
+#bat-text {
+    position: relative; font-size: 0.60em; font-weight: 900;
+    z-index: 2; color: currentColor; text-align: center;
+    width: 100%; line-height: 1;
+}
+
+#controls {
+    position: fixed; bottom: 8px; right: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 1000;
+    transition: opacity 0.5s ease, visibility 0.5s ease; 
+    opacity: 1; visibility: visible;
+}
+
+.control-btn {
+    width: 38px; height: 38px; font-size: 11px; font-weight: bold;
+    background: rgba(128,128,128,0.6); color: white;
+    border: 1px solid rgba(255,255,255,0.8); border-radius: 8px;
+    cursor: pointer; -webkit-user-select: none; user-select: none;
+}
+
+.color-btn { background: linear-gradient(135deg, red, white, green); color: blue; }
+.bg-btn { background: linear-gradient(135deg, #fff, #444, #000); color: #00ff00; border: 1px solid #fff; }
+</style>
+</head>
+
+<body>
+
+<div id="pos-container">
+    <div id="wrap">
+      <div id="clock"><span id="hh">00</span><span id="colon">:</span><span id="mm">00</span></div>
+      <div id="date">--</div>
+    </div>
+</div>
+
+<div id="controls">
+    <div style="display:flex;gap:4px;justify-content:center;">
+        <button class="control-btn" id="moveU">&#x25B2;</button>
+    </div>
+    <div style="display:flex;gap:4px;">
+        <button class="control-btn" id="moveL">&#x25C0;</button>
+        <button class="control-btn" id="rotateBtn">&#x21BB;</button>
+        <button class="control-btn" id="moveR">&#x25B6;</button>
+    </div>
+    <div style="display:flex;gap:4px;justify-content:center;">
+        <button class="control-btn" id="moveD">&#x25BC;</button>
+    </div>
+    <div style="display:flex;gap:4px;justify-content:center;">
+        <button class="control-btn" id="fontPrevBtn">F-</button>
+        <button class="control-btn" id="fontNextBtn">F+</button>
+        <button class="control-btn" id="layoutBtn">V/H</button>
+    </div>
+    <div style="display:flex;gap:4px;justify-content:center;">
+        <button class="control-btn" id="dateMinus">D-</button>
+        <button class="control-btn" id="datePlus">D+</button>
+    </div>
+    <div style="display:flex;gap:4px;justify-content:center;">
+        <button class="control-btn color-btn" id="colorBtn">T</button>
+        <button class="control-btn bg-btn" id="bgColorBtn">BG</button>
+    </div>
+    <div style="display: flex; gap: 4px; justify-content: center;">
+        <button class="control-btn" id="resetPosBtn">RST</button>
+        <button class="control-btn" id="fullScreenBtn">FS</button>
+    </div>
+</div>
+
+<script>
+function activateWakeLock() {
+    if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
+    if (navigator.requestWakeLock) navigator.requestWakeLock('screen');
+    if (navigator.keepWakeLock) navigator.keepWakeLock(true);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') activateWakeLock(); });
+activateWakeLock();
+
+var wrap = document.getElementById("wrap"), clockEl = document.getElementById("clock"), dateEl = document.getElementById("date");
+var hh = document.getElementById("hh"), mm = document.getElementById("mm"), colon = document.getElementById("colon");
+
+var fonts = ["Anton", "ArchivoBlack"];
+var colors = ["#ffffff","#000000","#ff3b3b","#ff9800","#ffeb3b","#4caf50","#00e5ff","#2196f3","#9c27b0","#ff00ff","#CCFF00","#00FF41","#A5F2F3","#BF00FF","#FF10F0"];
+var bgColors = ["#000000","#0a0a0a","#111111","#181818","#222222","#001f3f","#1b0333","#002b36","#2d0a31","#111","#333","#ffffff","#f2f2f2","#e0e0e0","#cccccc","#a9a9a9","#808080","#dcdcdc","#f5f5f5","#dc143c","#2196f3","#4caf50","#ff9800","#673ab7","#330000","#003300","#000033"];
+var days = ["SUN","MON","TUE","WED","THU","FRI","SAT"], months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+var fontIdx = parseInt(localStorage.getItem("jio_font")) || 0;
+var colorIdx = parseInt(localStorage.getItem("jio_color")) || 0;
+var bgIdx = parseInt(localStorage.getItem("jio_bg")) || 0;
+var rotateMode = parseInt(localStorage.getItem("jio_rotate")) || 0;
+var moveX = parseInt(localStorage.getItem("jio_moveX")) || 0;
+var moveY = parseInt(localStorage.getItem("jio_moveY")) || 0;
+var dateOffset = parseInt(localStorage.getItem("jio_dateOffset")) || 0;
+var dateScale = parseFloat(localStorage.getItem("jio_dateScale")) || 0.35;
+var clockGap = parseInt(localStorage.getItem("jio_clockGap")) || 0;
+var isDateVisible = localStorage.getItem("jio_dateVisible") !== "false";
+var isVertical = localStorage.getItem("jio_vertical") === "true";
+
+var batteryLevel = "0%", showColon = true, moveInterval = null, longPressTimer = null, isLongPress = false;
+let hideTimeout, isUserPressing = false; 
+
+function isUIVisible() { return document.getElementById("controls").style.opacity !== "0"; }
+
+function showControls() {
+    const controls = document.getElementById("controls");
+    controls.style.opacity = "1";
+    controls.style.visibility = "visible";
+    controls.style.pointerEvents = "auto";
+    clearTimeout(hideTimeout);
+    if (!isUserPressing) {
+        hideTimeout = setTimeout(() => {
+            controls.style.opacity = "0";
+            controls.style.visibility = "hidden";
+            controls.style.pointerEvents = "none";
+        }, 5000);
+    }
+}
+
+document.body.addEventListener('click', (e) => {
+    if (e.target.id === 'controls' || e.target.closest('#controls')) return;
+    showControls();
+}, true);
+
+function startLogic(type, dir) {
+    isUserPressing = true; showControls(); isLongPress = false;
+    clearTimeout(longPressTimer); clearInterval(moveInterval);
+    longPressTimer = setTimeout(() => {
+        isLongPress = true;
+        moveInterval = setInterval(() => {
+            if (type === 'pos') {
+                moveLogic(dir, false);
+            } else if (type === 'dateOffset') {
+                moveLogic(dir === 'plus' ? 'D' : 'U', true);
+            } else if (type === 'vtoggle') {
+                isDateVisible = !isDateVisible; applyAll(); saveSettings();
+                clearInterval(moveInterval);
+            }
+        }, 50);
+    }, 500);
+}
+
+function stopLogic(type, dir) {
+    if(!isUserPressing) return;
+    isUserPressing = false; clearTimeout(longPressTimer); clearInterval(moveInterval);
+    if (!isLongPress) {
+        if (type === 'pos') moveLogic(dir, false);
+        else if (type === 'dateOffset') {
+            if (dir === 'plus') dateScale += 0.02; else dateScale = Math.max(0.1, dateScale - 0.02);
+            applyAll();
+        } else if (type === 'vtoggle') {
+            isVertical = !isVertical; applyAll();
+        }
+    }
+    saveSettings(); showControls();
+}
+
+// KEYPAD EVENTS (Point 1 & 2 implemented here)
+document.addEventListener('keydown', (e) => {
+    if(e.repeat) return;
+    showControls();
+    switch(e.key) {
+        case 'ArrowUp': startLogic('pos', 'U'); break; 
+        case 'ArrowDown': startLogic('pos', 'D'); break;
+        case 'ArrowLeft': startLogic('pos', 'L'); break;
+        case 'ArrowRight': startLogic('pos', 'R'); break;
+        case '8': // Point 1: Gap change +10 steps & Reset
+            if(isVertical) {
+                clockGap = (clockGap >= 100) ? 0 : clockGap + 10;
+                applyAll();
+                saveSettings();
+            }
+            break;
+        case '4': startLogic('dateOffset', 'minus'); break;
+        case '6': startLogic('dateOffset', 'plus'); break;
+        case '3': isVertical = !isVertical; applyAll(); saveSettings(); break;
+        case '1': fontIdx=(fontIdx-1+fonts.length)%fonts.length; applyAll(); saveSettings(); break;
+        case '2': fontIdx=(fontIdx+1)%fonts.length; applyAll(); saveSettings(); break;
+        case '7': colorIdx=(colorIdx+1)%colors.length; applyAll(); saveSettings(); break;
+        case 'Enter': // Point 2: Center key to rotate (Key 5 removed)
+            rotateMode=(rotateMode+1)%3; applyAll(); saveSettings(); break;
+        case '0': moveX=0; moveY=0; dateOffset=0; clockGap=0; applyAll(); saveSettings(); break;
+        case '9': bgIdx=(bgIdx+1)%bgColors.length; applyAll(); saveSettings(); break;
+        case '*': isDateVisible=!isDateVisible; applyAll(); saveSettings(); break;
+        case '#': if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); break;
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.key.startsWith('Arrow')) stopLogic('pos', e.key === 'ArrowUp' ? 'U' : (e.key === 'ArrowDown' ? 'D' : (e.key === 'ArrowLeft' ? 'L' : 'R')));
+    if (e.key === '4' || e.key === '6') stopLogic('dateOffset', e.key === '6' ? 'plus' : 'minus');
+});
+
+function applyAll(){
+    document.documentElement.style.setProperty('--move-x', moveX+"px");
+    document.documentElement.style.setProperty('--move-y', moveY+"px");
+    document.documentElement.style.setProperty('--clock-font', fonts[fontIdx]);
+    document.documentElement.style.setProperty('--date-offset', dateOffset+"px");
+    document.documentElement.style.setProperty('--date-scale', dateScale);
+    document.documentElement.style.setProperty('--clock-gap', clockGap + "px");
+    document.body.style.color = colors[colorIdx];
+    document.body.style.backgroundColor = bgColors[bgIdx];
+    wrap.className = (rotateMode===1) ? "rotated-left" : (rotateMode===2) ? "rotated-right" : "";
+    dateEl.style.display = isDateVisible ? "flex" : "none";
+    if(isVertical) clockEl.classList.add('vertical'); else clockEl.classList.remove('vertical');
+    setTimeout(autoFitClock, 10);
+}
+
+function autoFitClock(){
+    document.documentElement.style.setProperty('--clock-size', "50px");
+    let w = window.innerWidth, h = window.innerHeight;
+    let usableW = (rotateMode === 0) ? w : h, usableH = (rotateMode === 0) ? h : w;
+    let originalGap = clockGap;
+    document.documentElement.style.setProperty('--clock-gap', "0px");
+    let textW = clockEl.offsetWidth;
+    let textH = clockEl.offsetHeight;
+    if(textW === 0 || textH === 0) return;
+    let scale = !isVertical ? (usableW / textW) * 1.025 : (usableW / textW); 
+    if(isVertical && (textH * scale) + (originalGap * 1.5) > usableH) scale = (usableH - originalGap) / textH;
+    let newSize = 50 * scale;
+    document.documentElement.style.setProperty('--clock-size', newSize + "px");
+    document.documentElement.style.setProperty('--clock-gap', originalGap + "px");
+}
+
+function moveLogic(dir, isDate) {
+    if(!isUIVisible()) return;
+    let step = 8;
+    if (isDate) {
+        if (dir === 'U') dateOffset -= step; if (dir === 'D') dateOffset += step;
+    } else {
+        if (dir === 'U') moveY -= step; if (dir === 'D') moveY += step;
+        if (dir === 'L') moveX -= step; if (dir === 'R') moveX += step;
+    }
+    applyAll();
+}
+
+function saveSettings(){
+    localStorage.setItem("jio_font", fontIdx); localStorage.setItem("jio_color", colorIdx);
+    localStorage.setItem("jio_bg", bgIdx); localStorage.setItem("jio_rotate", rotateMode);
+    localStorage.setItem("jio_moveX", moveX); localStorage.setItem("jio_moveY", moveY);
+    localStorage.setItem("jio_dateOffset", dateOffset); localStorage.setItem("jio_dateScale", dateScale);
+    localStorage.setItem("jio_clockGap", clockGap); localStorage.setItem("jio_dateVisible", isDateVisible);
+    localStorage.setItem("jio_vertical", isVertical);
+}
+
+// SCREEN BUTTON EVENTS (Keep original functionality)
+['U','D','L','R'].forEach(d => {
+    let btn = document.getElementById("move"+d);
+    btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); startLogic('pos', d); };
+    btn.onmouseup = btn.ontouchend = () => stopLogic('pos', d);
+});
+
+['datePlus', 'dateMinus'].forEach(id => {
+    let btn = document.getElementById(id);
+    btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); startLogic('dateOffset', id === 'datePlus' ? 'plus' : 'minus'); };
+    btn.onmouseup = btn.ontouchend = () => stopLogic('dateOffset', id === 'datePlus' ? 'plus' : 'minus');
+});
+
+let layoutBtn = document.getElementById("layoutBtn");
+layoutBtn.onmousedown = layoutBtn.ontouchstart = (e) => { e.preventDefault(); startLogic('vtoggle', ''); };
+layoutBtn.onmouseup = layoutBtn.ontouchend = () => stopLogic('vtoggle', '');
+
+function updateClock(){
+    var d=new Date(), h=d.getHours()%12||12, m=d.getMinutes();
+    hh.innerHTML=(h<10?"0"+h:h); mm.innerHTML=(m<10?"0"+m:m);
+    colon.style.visibility=showColon?"visible":"hidden"; showColon=!showColon;
+    if (navigator.getBattery) {
+        navigator.getBattery().then(bat => {
+            let level = Math.floor(bat.level * 100) + "%";
+            let batHTML = `<span id="bat-container"><span id="bat-fill" style="width: ${level}"></span><span id="bat-text">${level}</span></span>`;
+            dateEl.innerHTML = days[d.getDay()] + "-" + (d.getDate()<10?"0"+d.getDate():d.getDate()) + " " + months[d.getMonth()] + " " + batHTML;
+        });
+    }
+    autoFitClock();
+}
+
+document.getElementById("rotateBtn").onclick = () => { rotateMode = (rotateMode + 1) % 3; saveSettings(); applyAll(); };
+document.getElementById("fontNextBtn").onclick=()=>{ fontIdx=(fontIdx+1)%fonts.length;saveSettings();applyAll();};
+document.getElementById("fontPrevBtn").onclick=()=>{ fontIdx=(fontIdx-1+fonts.length)%fonts.length;saveSettings();applyAll();};
+document.getElementById("colorBtn").onclick=()=>{ colorIdx=(colorIdx+1)%colors.length;saveSettings();applyAll();};
+document.getElementById("bgColorBtn").onclick=()=>{ bgIdx=(bgIdx+1)%bgColors.length;saveSettings();applyAll();};
+document.getElementById("resetPosBtn").onclick = () => { moveX=0; moveY=0; clockGap=0; dateOffset=0; saveSettings(); applyAll(); };
+document.getElementById("fullScreenBtn").onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); };
+
+setInterval(updateClock,1000);
+updateClock(); applyAll();
+</script>
+</body>
+</html>
