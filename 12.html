@@ -60,7 +60,7 @@ html, body {
 
 #clock.vertical { 
     -webkit-box-orient: vertical; -webkit-flex-direction: column; flex-direction: column; 
-    line-height: 0.8; 
+    line-height: 1; /* Browser zoom rokne ke liye fix */
     gap: var(--clock-gap);
 }
 #clock.vertical #colon { display: none; }
@@ -198,7 +198,7 @@ var clockGap = parseInt(localStorage.getItem("jio_clockGap")) || 0;
 var isDateVisible = localStorage.getItem("jio_dateVisible") !== "false";
 var isVertical = localStorage.getItem("jio_vertical") === "true";
 
-var batteryLevel = "0%", showColon = true, moveInterval = null, longPressTimer = null, isLongPress = false;
+var showColon = true, moveInterval = null, longPressTimer = null, isLongPress = false;
 let hideTimeout, isUserPressing = false; 
 
 function isUIVisible() { return document.getElementById("controls").style.opacity !== "0"; }
@@ -233,9 +233,6 @@ function startLogic(type, dir) {
                 moveLogic(dir, false);
             } else if (type === 'dateOffset') {
                 moveLogic(dir === 'plus' ? 'D' : 'U', true);
-            } else if (type === 'vtoggle') {
-                isDateVisible = !isDateVisible; applyAll(); saveSettings();
-                clearInterval(moveInterval);
             }
         }, 50);
     }, 500);
@@ -249,14 +246,12 @@ function stopLogic(type, dir) {
         else if (type === 'dateOffset') {
             if (dir === 'plus') dateScale += 0.02; else dateScale = Math.max(0.1, dateScale - 0.02);
             applyAll();
-        } else if (type === 'vtoggle') {
-            isVertical = !isVertical; applyAll();
         }
     }
     saveSettings(); showControls();
 }
 
-// KEYPAD EVENTS (Point 1 & 2 implemented here)
+// KEYPAD EVENTS
 document.addEventListener('keydown', (e) => {
     if(e.repeat) return;
     showControls();
@@ -265,21 +260,21 @@ document.addEventListener('keydown', (e) => {
         case 'ArrowDown': startLogic('pos', 'D'); break;
         case 'ArrowLeft': startLogic('pos', 'L'); break;
         case 'ArrowRight': startLogic('pos', 'R'); break;
-        case '8': // Point 1: Gap change +10 steps & Reset
+        case '8': // Point 1: Gap change +10 steps & Reset Fix
             if(isVertical) {
-                clockGap = (clockGap >= 100) ? 0 : clockGap + 10;
+                clockGap = (clockGap >= 80) ? 0 : clockGap + 10;
                 applyAll();
                 saveSettings();
             }
             break;
+        case 'Enter': // Point 2: Center key to rotate
+            rotateMode=(rotateMode+1)%3; applyAll(); saveSettings(); break;
         case '4': startLogic('dateOffset', 'minus'); break;
         case '6': startLogic('dateOffset', 'plus'); break;
         case '3': isVertical = !isVertical; applyAll(); saveSettings(); break;
         case '1': fontIdx=(fontIdx-1+fonts.length)%fonts.length; applyAll(); saveSettings(); break;
         case '2': fontIdx=(fontIdx+1)%fonts.length; applyAll(); saveSettings(); break;
         case '7': colorIdx=(colorIdx+1)%colors.length; applyAll(); saveSettings(); break;
-        case 'Enter': // Point 2: Center key to rotate (Key 5 removed)
-            rotateMode=(rotateMode+1)%3; applyAll(); saveSettings(); break;
         case '0': moveX=0; moveY=0; dateOffset=0; clockGap=0; applyAll(); saveSettings(); break;
         case '9': bgIdx=(bgIdx+1)%bgColors.length; applyAll(); saveSettings(); break;
         case '*': isDateVisible=!isDateVisible; applyAll(); saveSettings(); break;
@@ -316,8 +311,13 @@ function autoFitClock(){
     let textW = clockEl.offsetWidth;
     let textH = clockEl.offsetHeight;
     if(textW === 0 || textH === 0) return;
-    let scale = !isVertical ? (usableW / textW) * 1.025 : (usableW / textW); 
-    if(isVertical && (textH * scale) + (originalGap * 1.5) > usableH) scale = (usableH - originalGap) / textH;
+    
+    // Zoom-out rokne ke liye scaling logic refine kiya
+    let scale = !isVertical ? (usableW / textW) * 0.95 : (usableW / textW) * 0.9; 
+    if(isVertical && (textH * scale) + (originalGap) > (usableH * 0.9)) {
+        scale = (usableH * 0.9 - originalGap) / textH;
+    }
+    
     let newSize = 50 * scale;
     document.documentElement.style.setProperty('--clock-size', newSize + "px");
     document.documentElement.style.setProperty('--clock-gap', originalGap + "px");
@@ -344,7 +344,7 @@ function saveSettings(){
     localStorage.setItem("jio_vertical", isVertical);
 }
 
-// SCREEN BUTTON EVENTS (Keep original functionality)
+// SCREEN BUTTON EVENTS
 ['U','D','L','R'].forEach(d => {
     let btn = document.getElementById("move"+d);
     btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); startLogic('pos', d); };
@@ -357,9 +357,7 @@ function saveSettings(){
     btn.onmouseup = btn.ontouchend = () => stopLogic('dateOffset', id === 'datePlus' ? 'plus' : 'minus');
 });
 
-let layoutBtn = document.getElementById("layoutBtn");
-layoutBtn.onmousedown = layoutBtn.ontouchstart = (e) => { e.preventDefault(); startLogic('vtoggle', ''); };
-layoutBtn.onmouseup = layoutBtn.ontouchend = () => stopLogic('vtoggle', '');
+document.getElementById("layoutBtn").onclick = () => { isVertical = !isVertical; applyAll(); saveSettings(); };
 
 function updateClock(){
     var d=new Date(), h=d.getHours()%12||12, m=d.getMinutes();
